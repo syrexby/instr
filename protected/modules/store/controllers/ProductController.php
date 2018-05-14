@@ -33,6 +33,7 @@ class ProductController extends FrontController
      */
     public function actionIndex()
     {
+        $view = 'index';
         $typesSearchParam = $this->attributeFilter->getTypeAttributesForSearchFromQuery(Yii::app()->getRequest());
 
         $mainSearchParam = $this->attributeFilter->getMainAttributesForSearchFromQuery(
@@ -44,17 +45,56 @@ class ProductController extends FrontController
 
         if (!empty($mainSearchParam) || !empty($typesSearchParam)) {
             $data = $this->productRepository->getByFilter($mainSearchParam, $typesSearchParam);
+            $view = 'search';
         } else {
-            $data = $this->productRepository->getListForIndexPage();
+            $data = false;
         }
-
         $this->render(
-            'index',
+            $view,
             [
                 'dataProvider' => $data,
+                'searchString' => $view == 'search' ? $mainSearchParam[AttributeFilter::MAIN_SEARCH_PARAM_NAME] : false,
             ]
         );
     }
+  /**
+   *
+   */
+  public function actionSearch()
+  {
+    if (Yii::app()->getRequest()->getIsAjaxRequest()) {
+
+      $typesSearchParam = $this->attributeFilter->getTypeAttributesForSearchFromQuery(Yii::app()->getRequest());
+      $mainSearchParam = $this->attributeFilter->getMainAttributesForSearchFromQuery(
+          Yii::app()->getRequest(),
+          [
+              AttributeFilter::MAIN_SEARCH_PARAM_NAME => Yii::app()->getRequest()->getQuery(AttributeFilter::MAIN_SEARCH_QUERY_NAME)
+          ]
+      );
+
+      if (!empty($mainSearchParam) || !empty($typesSearchParam)) {
+        $data = $this->productRepository->getByFilter($mainSearchParam, $typesSearchParam, 15);
+      } else {
+        $data = false;
+      }
+      $result = [];
+      $i = 0;
+      foreach ($data->getData() as $item){
+        /**
+         * @var $item Product
+         */
+        $result[$i]['name'] = $item->name;
+        $result[$i]['url'] = ProductHelper::getUrl($item);
+        $result[$i]['img'] = StoreImage::product($item, 45, 45, false);
+        $i++;
+      }
+
+      echo CJSON::encode($result);
+
+      return;
+    }
+      throw new CHttpException(404);
+  }
 
     /**
      * @param string $name Product slug

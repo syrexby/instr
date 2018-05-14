@@ -29,7 +29,7 @@ return [
     // Default controller
     'defaultController' => 'site',
     // Application name
-    'name' => 'Yupe!',
+    'name' => 'Домовой',
     // Default language
     'language' => 'ru',
     'sourceLanguage' => 'en',

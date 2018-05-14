@@ -263,6 +263,8 @@ return [
     'Search in category "{category}"' => 'Поиск в категории "{category}"',
     'Search' => 'Поиск',
     'search' => 'поиск',
+    'search results' => 'результаты поиска',
+    'Search results' => 'Результаты поиска',
     'Select {field}' => 'Выберите {field}',
     'SEO_Title' => 'Заголовок H1',
     'Short description' => 'Короткое описание',

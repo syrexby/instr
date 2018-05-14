@@ -23,6 +23,10 @@ class ContactController extends \yupe\components\controllers\FrontController
      * @var FeedbackService
      */
     protected $feedback;
+    /**
+     * @var \yupe\components\ReCaptcha
+     */
+    protected $recaptcha;
 
     /**
      *
@@ -32,6 +36,7 @@ class ContactController extends \yupe\components\controllers\FrontController
         parent::init();
 
         $this->feedback = Yii::app()->getComponent('feedback');
+        $this->recaptcha = Yii::app()->getComponent('recaptcha');
     }
 
     /**
@@ -54,7 +59,6 @@ class ContactController extends \yupe\components\controllers\FrontController
     public function actionIndex($type = null)
     {
         $form = new FeedBackForm();
-
         // если пользователь авторизован - подставить его данные
         if (Yii::app()->getUser()->isAuthenticated()) {
             $form->email = Yii::app()->getUser()->getProFileField('email');
@@ -67,48 +71,72 @@ class ContactController extends \yupe\components\controllers\FrontController
         $module = Yii::app()->getModule('feedback');
 
         if (Yii::app()->getRequest()->getIsPostRequest() && !empty($_POST['FeedBackForm'])) {
+          $response = null;
+//          var_dump($_POST);
+          if ($_POST["g-recaptcha-response"]) {
+            $response = $this->recaptcha->verifyResponse(
+                $_SERVER["REMOTE_ADDR"],
+                $_POST["g-recaptcha-response"]
+            );
+          }
 
+          if ($response != null && $response['success']) {
             $form->setAttributes(
                 Yii::app()->getRequest()->getPost('FeedBackForm')
             );
 
             if ($form->validate()) {
 
-                if ($this->feedback->send($form, $module)) {
+              if ($this->feedback->send($form, $module)) {
 
-                    if (Yii::app()->getRequest()->getIsAjaxRequest()) {
-                        Yii::app()->ajax->success(Yii::t('FeedbackModule.feedback', 'Your message sent! Thanks!'));
-                    }
-
-                    Yii::app()->getUser()->setFlash(
-                        YFlashMessages::SUCCESS_MESSAGE,
-                        Yii::t('FeedbackModule.feedback', 'Your message sent! Thanks!')
-                    );
-
-                    $this->redirect(
-                        $module->successPage ? [$module->successPage] : ['/feedback/contact/index/']
-                    );
-                } else {
-
-                    if (Yii::app()->getRequest()->getIsAjaxRequest()) {
-                        Yii::app()->ajax->failure(
-                            Yii::t('FeedbackModule.feedback', 'It is not possible to send message!')
-                        );
-                    }
-
-                    Yii::app()->getUser()->setFlash(
-                        YFlashMessages::ERROR_MESSAGE,
-                        Yii::t('FeedbackModule.feedback', 'It is not possible to send message!')
-                    );
-
+                if (Yii::app()->getRequest()->getIsAjaxRequest()) {
+                  Yii::app()->ajax->success(Yii::t('FeedbackModule.feedback', 'Your message sent! Thanks!'));
                 }
+
+                Yii::app()->getUser()->setFlash(
+                    YFlashMessages::SUCCESS_MESSAGE,
+                    Yii::t('FeedbackModule.feedback', 'Your message sent! Thanks!')
+                );
+
+                $this->redirect(
+                    $module->successPage ? [$module->successPage] : ['/feedback/contact/index/']
+                );
+              } else {
+
+                if (Yii::app()->getRequest()->getIsAjaxRequest()) {
+                  Yii::app()->ajax->failure(
+                      Yii::t('FeedbackModule.feedback', 'It is not possible to send message!')
+                  );
+                }
+
+                Yii::app()->getUser()->setFlash(
+                    YFlashMessages::ERROR_MESSAGE,
+                    Yii::t('FeedbackModule.feedback', 'It is not possible to send message!')
+                );
+
+              }
 
             } else {
 
-                if (Yii::app()->getRequest()->getIsAjaxRequest()) {
-                    Yii::app()->ajax->rawText(CActiveForm::validate($form));
-                }
+              if (Yii::app()->getRequest()->getIsAjaxRequest()) {
+                Yii::app()->ajax->rawText(CActiveForm::validate($form));
+              }
             }
+          } else {
+
+            if (Yii::app()->getRequest()->getIsAjaxRequest()) {
+              Yii::app()->ajax->failure(
+                  Yii::t('FeedbackModule.feedback', 'Something went wrong. Try again.')
+              );
+            }
+
+            Yii::app()->getUser()->setFlash(
+                YFlashMessages::ERROR_MESSAGE,
+                Yii::t('FeedbackModule.feedback', 'Something went wrong. Try again.')
+            );
+
+          }
+
         }
 
         $this->render('index', ['model' => $form, 'module' => $module]);

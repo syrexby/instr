@@ -22,8 +22,9 @@ class ProductRepository extends CApplicationComponent
      * @param array $mainSearchAttributes
      * @param array $typeSearchAttributes
      * @return CActiveDataProvider
+     * @param null $limit
      */
-    public function getByFilter(array $mainSearchAttributes, array $typeSearchAttributes)
+    public function getByFilter(array $mainSearchAttributes, array $typeSearchAttributes, $limit = null)
     {
         /** @var StoreModule $module */
         $module = Yii::app()->getModule('store');
@@ -94,14 +95,20 @@ class ProductRepository extends CApplicationComponent
 
         $criteria->mergeWith($this->buildCriteriaForTypeAttributes($typeSearchAttributes));
 
+        $pagination = [
+            'pageSize' => (int)$module->itemsPerPage,
+            'pageVar' => 'page',
+        ];
+
+        if ($limit) {
+          $pagination = false;
+          $criteria->limit = (int)$limit;
+        }
         return new CActiveDataProvider(
             'Product',
             [
                 'criteria' => $criteria,
-                'pagination' => [
-                    'pageSize' => (int)$module->itemsPerPage,
-                    'pageVar' => 'page',
-                ],
+                'pagination' => $pagination,
                 'sort' => [
                     'sortVar' => 'sort',
                     'defaultOrder' => $module->getDefaultSort(),

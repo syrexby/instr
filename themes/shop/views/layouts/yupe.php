@@ -3,7 +3,7 @@
 
 <head>
     <?php
-    \yupe\components\TemplateEvent::fire(ShopThemeEvents::HEAD_START);
+    \yupe\components\TemplateEvent::fire(DomovoiThemeEvents::HEAD_START);
 
     Yii::app()->getClientScript()->registerCssFile($this->mainAssets . '/styles/slick.css');
     Yii::app()->getClientScript()->registerCssFile($this->mainAssets . '/libs/select2/select2.css');
@@ -37,11 +37,11 @@
         var yupeCartUpdateUrl = '<?= Yii::app()->createUrl('/cart/cart/update/')?>';
         var yupeCartWidgetUrl = '<?= Yii::app()->createUrl('/cart/cart/widget/')?>';
     </script>
-    <?php \yupe\components\TemplateEvent::fire(ShopThemeEvents::HEAD_END);?>
+    <?php \yupe\components\TemplateEvent::fire(DomovoiThemeEvents::HEAD_END);?>
 </head>
 
 <body>
-<?php \yupe\components\TemplateEvent::fire(ShopThemeEvents::BODY_START);?>
+<?php \yupe\components\TemplateEvent::fire(DomovoiThemeEvents::BODY_START);?>
 <div class="main">
     <div class="main__navbar">
         <div class="navbar">
@@ -194,7 +194,7 @@
         </div>
     </div>
 </div>
-<?php \yupe\components\TemplateEvent::fire(ShopThemeEvents::BODY_END);?>
+<?php \yupe\components\TemplateEvent::fire(DomovoiThemeEvents::BODY_END);?>
 <div class='notifications top-right' id="notifications"></div>
 <?php
 Yii::app()->getClientScript()->registerScriptFile($this->mainAssets . '/js/index.js', CClientScript::POS_END);
