@@ -86,6 +86,8 @@ class ProductController extends FrontController
         $result[$i]['name'] = $item->name;
         $result[$i]['url'] = ProductHelper::getUrl($item);
         $result[$i]['img'] = StoreImage::product($item, 45, 45, false);
+        $result[$i]['price'] = $item->getPrice();
+        $result[$i]['instock'] = $item->isInStock();
         $i++;
       }
 

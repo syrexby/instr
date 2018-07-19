@@ -1,6 +1,9 @@
 <?php
 
 /* @var $product Product */
+Yii::app()->getClientScript()->registerCssFile($this->mainAssets . '/styles/owl.carousel.min.css');
+Yii::app()->getClientScript()->registerCssFile($this->mainAssets . '/styles/owl.theme.default.min.css');
+Yii::app()->getClientScript()->registerScriptFile($this->mainAssets . '/js/owl.carousel.min.js', CClientScript::POS_END);
 
 $this->title = $product->getMetaTitle();
 $this->description = $product->getMetaDescription();
@@ -9,15 +12,47 @@ $this->canonical = $product->getMetaCanonical();
 
 //Yii::app()->getClientScript()->registerScriptFile($this->mainAssets . '/js/store.js', CClientScript::POS_END);
 
+
 $this->breadcrumbs = array_merge(
     [Yii::t("StoreModule.store", 'Catalog') => ['/store/product/index']],
     $product->category ? $product->category->getBreadcrumbs(true) : [],
     [CHtml::encode($product->name)]
 );
 
-$sale = in_array(416, $product->getCategoriesId());
-$new = in_array(3, $product->getCategoriesId());
+$sale = in_array(486, $product->getCategoriesId());
+$new = in_array(487, $product->getCategoriesId());
 
+Yii::app()->clientScript->registerScript('microdata', /** @lang JSON */
+    '
+    
+    {"@context":"http://schema.org",
+     "@type":"Product",
+     "name":"'. $product->getProducerName() . ' ' . $product->getName() .'",
+     "image": [
+       "'.$product->getImageUrl().'"
+     ],
+     "description": "'. strip_tags($product->description) .'",
+     "brand": {
+       "@type": "Brand",
+       "name": "'.$product->getProducerName().'"
+      }
+    }
+
+    ', CClientScript::POS_HEAD, ['type' => 'application/ld+json']);
+
+Yii::app()->clientScript->registerScript('owlInit1', /** @lang JavaScript */
+    '
+$(document).ready(function(){
+        $(\'.order__good__view\').productGallery();
+        $(\'.owl-carousel\').owlCarousel({
+                margin:5,
+                nav:true,
+                items:5,
+                dots: false,
+        
+            });
+        });
+        ', CClientScript::POS_END);
 $label = false;
 $label_sale = false;
 $label_new = false;
@@ -28,8 +63,8 @@ if($sale || $new) {
   $label_new = $new ?: false;
 }
 ?>
-<div class = "order__container-add">
-    <div class = "order">
+<main class = "order__container-add">
+    <div class = "order"  itemscope itemtype="https://schema.org/Product">
         <div class = "order__good">
             <div class="order__good__view">
               <? if ($label) : ?>
@@ -42,23 +77,54 @@ if($sale || $new) {
                     <? endif; ?>
                   </div>
               <? endif; ?>
-                <a class="product__img-wrap" href="<?= StoreImage::product($product); ?>" data-fancybox>
-                    <img src="<?= StoreImage::product($product); ?>"
-                         alt="<?= CHtml::encode($product->getImageAlt()); ?>"
-                         title="<?= CHtml::encode($product->getImageTitle()); ?>">
-                </a>
-                <div class = "view__search">
-                    <img src="<?= $this->mainAssets ?>/img/search-rev.png" />
-                </div>
-
+               <figure>
+                	<div class="product__img-wrap" >
+                        <a href="<?= StoreImage::product($product); ?>" class="product__img-block" data-product-image>
+                            <img src="<?= StoreImage::product($product) ?>"
+                                 alt="<?= CHtml::encode($product->getImageAlt()); ?>"
+                                 title="<?= CHtml::encode($product->getImageTitle()); ?>"
+                                 class="product__img">
+                        </a>
+                	</div>
+                </figure>
+              <? if(count($product->getImages()) > 0 ) : ?>
+                  <div class="product__img-nav owl-carousel">
+                      <a href="<?= StoreImage::product($product); ?>" rel="group" data-product-thumbnail
+                         class="product__nav-item">
+                          <img src="<?= StoreImage::product($product, 100, 100, false); ?>" alt="<?= CHtml::encode($product->getImageAlt()); ?>"
+                               class="product__nav-img">
+                      </a>
+                    <? foreach ($product->getImages() as $key => $image): ?>
+                        <a href="<?= $image->getImageUrl(); ?>" rel="group" data-product-thumbnail
+                           class="product__nav-item">
+                            <img src="<?= $image->getImageUrl(100, 100, false); ?>" alt="<?= CHtml::encode($product->getImageAlt()); ?>"
+                                 class="product__nav-img">
+                        </a>
+                    <? endforeach; ?>
+                  </div>
+              <? endif; ?>
             </div>
+
             <div class="order__good__options">
-                <h1 class = "options-capture"><?= CHtml::encode($product->getTitle()); ?></h1>
-                <div class="options-price">
-                  <?php if ($product->hasDiscount()): ?>
+
+                <h1 class = "options-capture" itemprop="name"><?= CHtml::encode($product->getTitle()); ?></h1>
+                <div  itemprop="offers" itemscope itemtype="http://schema.org/Offer"
+                      class="options-price <?= $product->in_stock != $product::STATUS_IN_STOCK ? 'not-in-stock' : '' ?>" >
+
+                  <?php if($product->in_stock == $product::STATUS_IN_STOCK): ?>
+                      <div class="in-stock"><link itemprop="availability" href="https://schema.org/InStock"/><?= Yii::t("StoreModule.store", "In stock");?></div>
+                  <?php else: ?>
+                      <div class="not-in-stock"><link itemprop="availability" href="https://schema.org/OutOfStock"/><?= Yii::t("StoreModule.store", "Not in stock");?></div>
+                  <?php endif; ?>
+
+                  <?php if ($product->hasDiscount() && $product->in_stock == $product::STATUS_IN_STOCK): ?>
                       <p class = "catalog__list__item-old-price"><span><?= round($product->getBasePrice(), 2) ?> руб./шт.</span></p>
                   <?php endif; ?>
-                    <p class = "options-price-volume"><span><?= round($product->getResultPrice(), 2); ?> руб./шт.</span></p>
+
+                  <?= $product->in_stock != $product::STATUS_IN_STOCK ? '<p class="last-price">Последняя цена:</p>' : '' ?>
+                    <p class = "options-price-volume" itemprop="price" content="<?= round($product->getResultPrice(), 2); ?>">
+                        <span itemprop="priceCurrency" content="BYN"><?= round($product->getResultPrice(), 2); ?> руб./шт.</span>
+                    </p>
                     <p class = "catalog__list__item-price-add">
                         Цены — ориентировочные.<br/> Уточняйте их у продавца.
                     </p>
@@ -68,29 +134,73 @@ if($sale || $new) {
                 <button class = "options-button">
                     <a href="tel:+375164441063">8 (01644) 4-10-63</a>
                 </button>
-                <button class = "options-button">
-                    <a href="tel:+375164441063">8 (029) 329-80-38</a>
-                </button>
+<!--                <button class = "options-button">-->
+<!--                    <a href="tel:+375164441063">8 (029) 329-80-38</a>-->
+<!--                </button>-->
             </div>
         </div>
-        <div class = "order__description">
-            <div class = "order__tabs">
-                <div class="tab-1"><a href = "">Описание товара</a></div>
-<!--                <div class="tab-2"><a href=""><span>Совет мастера</span></a></div>-->
+        <div class = "order__description product-tabs">
+            <div class = "order__tabs" data-nav="data-nav">
+                <div class="tab"><a href="#desc">Описание товара</a></div>
+              <?php if (!empty($product->data)): ?>
+                <div class="tab"><a href="#data">Комплектация</a></div>
+              <?php endif; ?>
             </div>
-            <div class = "product__description">
-                <?php if (!empty($product->description)): ?>
-                    <div class="wysiwyg">
+            <div class="js-tabs-bodies">
+                <div id="desc" class = "product__description js-tab">
+                  <?php if (!empty($product->description)): ?>
+                      <div class="wysiwyg" itemprop="description">
                         <?= $product->description ?>
+                      </div>
+                  <?php endif; ?>
+                    <div class="features">
+                        <h2 class="attr__title">Технические характеристики</h2>
+                      <?php foreach ($product->getAttributeGroups() as $groupName => $items): ?>
+                        <? if($groupName && $groupName != 'Технические характеристики') :?>
+                              <h2 class="attr-group__title"><?= CHtml::encode($groupName); ?></h2>
+                        <? endif; ?>
+                          <div class="attr-group__items">
+                            <?php foreach ($items as $attribute): ?>
+                              <? if($product->attribute($attribute)) : ?>
+                                    <div class="_row">
+                                        <div class="col_6">
+                                            <div class="attr-name">
+                                              <?= CHtml::encode($attribute->title); ?>
+                                            </div>
+                                        </div>
+                                        <div class="col_6">
+                                            <div class="attr-val">
+                                              <?= AttributeRender::renderValue($attribute, $product->attribute($attribute)); ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                              <? endif; ?>
+                            <?php endforeach; ?>
+                          </div>
+                      <?php endforeach; ?>
                     </div>
-                <?php endif; ?>
+                </div>
+
+              <?php if (!empty($product->data)): ?>
+                <div id="data" class = "product__description js-tab">
+                      <div class="wysiwyg">
+                          <ol>
+                            <?= $product->data ?>
+                          </ol>
+                      </div>
+                </div>
+                  <?php endif; ?>
+
             </div>
+
+
+
         </div>
     </div>
 
     <?php $this->widget('application.modules.store.widgets.LinkedProductsWidget', ['product' => $product, 'code' => null,]); ?>
 
-</div>
+</main>
 
 
 

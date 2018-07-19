@@ -61,7 +61,8 @@
         "yiiext/migrate-command": "dev-master",
         "samdark/sitemap": "2.0.*",
         "ckeditor/ckeditor": "4.*",
-        "wikimedia/composer-merge-plugin": "dev-master"
+        "wikimedia/composer-merge-plugin": "dev-master",
+        "sabre/xml": "2.1.*"
     },
     "repositories": {
         

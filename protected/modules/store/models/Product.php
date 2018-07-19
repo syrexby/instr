@@ -912,7 +912,7 @@ class Product extends yupe\models\YModel implements ICommentable
             }
         }
 
-        return $newPrice;
+        return number_format($newPrice, 2, ',', ' ');
     }
 
     /**
@@ -984,7 +984,12 @@ class Product extends yupe\models\YModel implements ICommentable
      */
     public function getMetaTitle()
     {
-        return $this->meta_title ?: $this->name;
+        if(str_word_count($this->name,0 , 'АаБбВвГгДдЕеЁёЖжЗзИиЙйКкЛлМмНнОоПпРрСсТтУуФфХхЦцЧчШшЩщЪъЫыЬьЭэЮюЯя') >= 5){
+          $title = $this->name . ' — купить в Дрогичине';
+        }
+        else
+          $title = strtolower($this->name) . ', купить в Дрогичине с доставкой по Брестской области по хорошей цене';
+        return $this->meta_title ?: $title;
     }
 
     /**
@@ -992,7 +997,8 @@ class Product extends yupe\models\YModel implements ICommentable
      */
     public function getMetaDescription()
     {
-        return $this->meta_description;
+        return $this->meta_description ?: strtolower($this->name) .
+          ' в Дрогичине, купить с доставкой по Брестской области. Отличные цены, лучшее обслуживание, бесплатная доставка по Дрогичину. ☎ 8 016 44 4-10-63';
     }
 
     /**
@@ -1000,7 +1006,7 @@ class Product extends yupe\models\YModel implements ICommentable
      */
     public function getMetaKeywords()
     {
-        return $this->meta_keywords;
+        return $this->meta_keywords ?: $this->name. ', дрогичин, купить, доставка';
     }
 
     /**

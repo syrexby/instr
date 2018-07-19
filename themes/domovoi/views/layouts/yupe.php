@@ -10,9 +10,23 @@
 
     Yii::app()->getClientScript()->registerCoreScript('jquery');
 
+    $isFrontpage = false;
+    if (Yii::app()->controller->id == 'site' && Yii::app()->controller->action->id == 'index') {
+      $isFrontpage = true;
+    }
 
     ?>
-    <title><?= $this->title;?></title>
+    <title>
+      <? if($isFrontpage) {
+            echo $this->title;
+         }
+         else {
+            echo str_word_count($this->title,0 , 'АаБбВвГгДдЕеЁёЖжЗзИиЙйКкЛлМмНнОоПпРрСсТтУуФфХхЦцЧчШшЩщЪъЫыЬьЭэЮюЯя') >= 5 ?
+                $this->title :
+                $this->title . ' | «Домовой» — стройматериалы с доставкой по Дрогичину и Брестской обл.';
+         } ?>
+    </title>
+    <meta charset="utf-8">
     <meta name="description" content="<?= $this->description;?>" />
     <meta name="keywords" content="<?= $this->keywords;?>" />
     <?php if ($this->canonical): ?>
@@ -33,11 +47,54 @@
         var yupeCartUpdateUrl = '<?= Yii::app()->createUrl('/cart/cart/update/')?>';
         var yupeCartWidgetUrl = '<?= Yii::app()->createUrl('/cart/cart/widget/')?>';
     </script>
+    <meta name="yandex-verification" content="bc8ea9a1dbe313dc" />
+
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript" >
+        (function (d, w, c) {
+            (w[c] = w[c] || []).push(function() {
+                try {
+                    w.yaCounter49172998 = new Ya.Metrika2({
+                        id:49172998,
+                        clickmap:true,
+                        trackLinks:true,
+                        accurateTrackBounce:true,
+                        webvisor:true
+                    });
+                } catch(e) { }
+            });
+
+            var n = d.getElementsByTagName("script")[0],
+                s = d.createElement("script"),
+                f = function () { n.parentNode.insertBefore(s, n); };
+            s.type = "text/javascript";
+            s.async = true;
+            s.src = "https://mc.yandex.ru/metrika/tag.js";
+
+            if (w.opera == "[object Opera]") {
+                d.addEventListener("DOMContentLoaded", f, false);
+            } else { f(); }
+        })(document, window, "yandex_metrika_callbacks2");
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/49172998" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+    <meta name="google-site-verification" content="Vhboj2yi26ITse-jprNDOuBLxPSOeZlC333rmsBXicw" />
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-62136900-8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-62136900-8');
+    </script>
+
     <?php \yupe\components\TemplateEvent::fire(DomovoiThemeEvents::HEAD_END);?>
 </head>
 
 <body>
 <?php \yupe\components\TemplateEvent::fire(DomovoiThemeEvents::BODY_START);?>
+
 <div class = "wrapper">
 
     <header class = "header"><!--header-->
@@ -59,10 +116,10 @@
                         <img src="<?= $this->mainAssets?>/img/phone-marker.png" width="15" height="15" alt="">
                         <a href="tel:+375164441063">8 (01644) 4-10-63</a>
                     </div>
-                    <div class = "header__phones">
-                        <img src="<?= $this->mainAssets?>/img/phone-marker.png" width="15" height="15" alt="">
-                        <a href="tel:+375293298038">8 (029) 329-80-38</a>
-                    </div>
+<!--                    <div class = "header__phones">-->
+<!--                        <img src="--><?//= $this->mainAssets?><!--/img/phone-marker.png" width="15" height="15" alt="">-->
+<!--                        <a href="tel:+375293298038">8 (029) 329-80-38</a>-->
+<!--                    </div>-->
 
                 </div>
                 <div class="header__contacts">
@@ -131,7 +188,29 @@
             <div class="container clearfix"><!--container-->
                 <div class = "catalog__flex-container"><!--catalog-flex-->
                     <div class="catalog__navigation">
-                      <?php $this->widget('application.modules.store.widgets.CategoryWidget', ['view' => 'menu-category-widget']); ?>
+
+                      <?
+//                      var_dump(Yii::app()->controller->id);
+                      if (Yii::app()->controller->id == 'category' && Yii::app()->controller->action->id == 'view') : ?>
+                        <form id="store-filter" name="store-filter" method="get">
+
+                        <?
+                        $category_alias = substr(strrchr(Yii::app()->getRequest()->getPathInfo(), "/"), 1);
+                        $category = Yii::app()->getComponent('categoryRepository')->getByAlias($category_alias);
+//                        var_dump($category->name);
+//
+                        $this->widget('application.modules.store.widgets.filters.PriceFilterWidget');
+                        $this->widget('application.modules.store.widgets.filters.CategoryFilterWidget', ['limit' => 30, 'category' => $category]);
+                        $this->widget('application.modules.store.widgets.filters.ProducerFilterWidget', ['limit' => 30, 'category' => $category]);
+                        $this->widget('application.modules.store.widgets.filters.FilterBlockWidget', [
+                            'category' => $category
+                        ]);
+                        ?>
+                        </form>
+                      <? else :
+                        $this->widget('application.modules.store.widgets.CategoryWidget', ['view' => 'menu-category-widget']);
+                      endif;
+                      ?>
                         <!--<div class = "catalog__button-download">
                             <button class = "catalog__button-price">
                                 <a href = "">
@@ -149,10 +228,16 @@
                                   'links' => $this->breadcrumbs,
                                   'tagName' => 'ul',
                                   'separator' => '>',
-                                  'homeLink' => '<li><a href="/">' . Yii::t('Yii.zii', 'Home') . '</a>',
-                                  'activeLinkTemplate' => '<li><a href="{url}">{label}</a>',
+                                  'homeLink' => '<li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+                                                    <a href="/" itemprop="item" title="'. Yii::t('YupeModule.yupe', 'To Homepage') .'"><span itemprop="name">
+                                                    ' . Yii::t('Yii.zii', 'Home')
+                                                    . '<span></a>',
+                                  'activeLinkTemplate' => '<li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+                                                            <a itemprop="item" href="{url}" title="К разделу «{label}»">
+                                                                <span itemprop="name">{label}</span>
+                                                            </a>',
                                   'inactiveLinkTemplate' => '<li><a>{label}</a>',
-                                  'htmlOptions' => [],
+                                  'htmlOptions' => ['itemscope itemtype' => 'http://schema.org/BreadcrumbList'],
                                   'encodeLabel' => false
                               ]
                           );?>
@@ -169,7 +254,7 @@
             <div class = "footer__flex-container"><!--footer-flex-->
                 <div class = "footer__logo">
                     <a class="footer__img" href="/"></a>
-                    <p>&#169; Домовой плюс, 2017</p>
+                    <p>&#169; Домовой плюс, 2009 - <?= date('Y')?></p>
                 </div>
                 <div class="footer__information">
                     <div class="footer__nav">
@@ -207,21 +292,25 @@
                             <img src="<?= $this->mainAssets?>/img/phone-marker.png" width="15" height="15" alt="">
                             <a href="tel:+375164441063">8 (01644) 4-10-63</a>
                         </div>
-                        <div class = "footer__phones">
-                            <img src="<?= $this->mainAssets?>/img/phone-marker.png" width="15" height="15" alt="">
-                            <a href="tel:+375293298038">8 (029) 329-80-38</a>
-                        </div>
+<!--                        <div class = "footer__phones">-->
+<!--                            <img src="--><?//= $this->mainAssets?><!--/img/phone-marker.png" width="15" height="15" alt="">-->
+<!--                            <a href="tel:+375293298038">8 (029) 329-80-38</a>-->
+<!--                        </div>-->
                     </div>
                 </div>
             </div><!--footer-flex-->
-            <div class="legal-info">ООО "КОРЕАЛ ТРЕЙД", УНП 192701933. 224000, г. Дрогичин, ул. Шевченко 93А, р/с BY40 МТВК 3012 0001 0933 0007 2877 в ОАО "Белаграпромбанк" БИК МТВКВY22, г. Минск, ул. Толстого, 10.</div>
+            <div class="legal-info">ООО "КОРЕАЛ ТРЕЙД", УНП 192701933. 225611, г. Дрогичин, ул. Шевченко 93А, р/с BY95 АКВВ 3012 1233 5001 2130 0000 в ЦБУ 108 в г. Дрогичин филиала №802 ОАО «АСБ Беларусбанк», БИК AKBBBY21802.</div>
         </div> <!--container-->
     </footer><!--footer-->
+</div>
 <?php \yupe\components\TemplateEvent::fire(DomovoiThemeEvents::BODY_END);?>
 <div class='notifications top-right' id="notifications"></div>
 <?php
-Yii::app()->getClientScript()->registerScriptFile($this->mainAssets . '/js/main.js', CClientScript::POS_END);
 Yii::app()->getClientScript()->registerScriptFile('https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.3.5/jquery.fancybox.min.js', CClientScript::POS_END);
+Yii::app()->getClientScript()->registerScriptFile($this->mainAssets . '/js/product-gallery.js', CClientScript::POS_END);
+Yii::app()->getClientScript()->registerScriptFile($this->mainAssets . '/js/index.js', CClientScript::POS_END);
+Yii::app()->getClientScript()->registerScriptFile($this->mainAssets . '/js/tabs.js', CClientScript::POS_END);
+Yii::app()->getClientScript()->registerScriptFile($this->mainAssets . '/js/main.js', CClientScript::POS_END);
 ?>
 </body>
 </html>

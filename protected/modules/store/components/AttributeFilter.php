@@ -213,7 +213,8 @@ class AttributeFilter extends CApplicationComponent
                 }
             }
         }
-        if (!empty($append) && !is_null($append[AttributeFilter::MAIN_SEARCH_PARAM_NAME])) {
+
+        if (!empty($append)) {
             $result = CMap::mergeArray($append, $result);
         }
 

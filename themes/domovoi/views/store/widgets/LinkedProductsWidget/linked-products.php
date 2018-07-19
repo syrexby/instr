@@ -1,5 +1,5 @@
 <?php if ($dataProvider->getTotalItemCount()): ?>
-    <div class = "similar">
+    <aside class = "similar">
         <p class = "similar__caption">Сопутствующие товары</p>
         <ul class = "similar-ul">
                 <?php $this->widget(
@@ -14,5 +14,5 @@
                     ]
                 ); ?>
         </ul>
-    </div>
+    </aside>
 <?php endif; ?>

@@ -34,6 +34,7 @@ class ProductRepository extends CApplicationComponent
             'distinct' => true,
             'params' => [],
         ]);
+
         $criteria->addCondition('t.status = :status');
         $criteria->params['status'] = Product::STATUS_ACTIVE;
 

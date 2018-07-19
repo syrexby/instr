@@ -90,7 +90,6 @@ class AttributeRender
                 $res = $value ? Yii::t("StoreModule.store", "Yes") : Yii::t("StoreModule.store", "No");
                 break;
         }
-
         return $res.$unit;
     }
 }

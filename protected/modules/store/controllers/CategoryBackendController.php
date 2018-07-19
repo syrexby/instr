@@ -17,7 +17,11 @@ class CategoryBackendController extends yupe\components\controllers\BackControll
                 'class' => 'yupe\components\actions\SortAction',
                 'model' => 'StoreCategory',
                 'attribute' => 'sort'
-            ]
+            ],
+          'xmlparser' => [
+              'class' => 'yupe\components\actions\XmlParserAction',
+              'path' => Yii::getPathOfAlias('webroot') . '/xml.xml',
+          ]
         ];
     }
 

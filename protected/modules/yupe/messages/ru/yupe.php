@@ -304,6 +304,7 @@ return [
     'Timashov Maxim' => 'Тимашов Максим',
     'Tischenko Alexander' => 'Тищенко Александр',
     'Title' => 'Заголовок',
+    'To Homepage' => 'На главную',
     'Turn down' => 'Опустить вниз',
     'Turn up' => 'Поднять вверх',
     'Uninstall' => 'Удалить',

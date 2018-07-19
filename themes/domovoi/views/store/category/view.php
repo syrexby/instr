@@ -24,6 +24,7 @@ $this->breadcrumbs = array_merge(
             <?php $this->widget(
                 'zii.widgets.CListView', [
                     'dataProvider' => $dataProvider,
+                    'afterAjaxUpdate' => 'toTopAfterAjaxUpdatePagination',
                     'itemView' => '//store/product/_item',
                     'template' => '
                         {items}

@@ -5,15 +5,55 @@ $(document).ajaxError(function () {
     $('#notifications').html('<div>Произошла ошибка =(</div>').fadeIn().delay(3000).fadeOut();
 });
 
+function toTopAfterAjaxUpdatePagination() {
+    $('.pagination>li>a').click(function () {
+        var offset;
+        var scroll_top_duration = 300;
+        offset = $('.catalog__box').offset().top;
+
+        setTimeout(
+            function () {
+                $('body,html').animate({
+                        scrollTop: offset,
+                    }, scroll_top_duration
+                )
+            },
+            300);
+
+    });
+}
+$( document ).ready(function() {
+    toTopAfterAjaxUpdatePagination();
+
+    $('.product-tabs').tabs();
+});
+
 
 (function($) {
     $.fn.searchRender = function(){
         var container = $('.search-block ul'),
-            item = '<li><a href=""><span class="search-img"><img src="" title="" /></span><span class="search-name"></span></a></li>';
+            item = '<li>' +
+                '<a href="">' +
+                '<span class="search-img">' +
+                '<img src="" title="" />' +
+                '</span>' +
+                '<span class="search-name"></span>' +
+                '<div class="search-priceblock">' +
+                '<span class="search-price"></span>' +
+                '<span class="search-stock"></span>' +
+                '</div>' +
+                '</a></li>';
         item = $(item);
+        console.log(this[0]);
         item.find('a').attr('href', this[0].url);
         item.find('img').attr('src', this[0].img).attr('title', this[0].name);
         item.find('.search-name').text(this[0].name);
+        item.find('.search-price').text(this[0].price);
+        if(this[0].instock === '1'){
+            item.find('.search-stock').addClass('in-stock').text('В наличии');
+        } else{
+            item.find('.search-stock').addClass('not-in-stock').text('Под заказ');
+        }
         container.append(item);
     };
 })(jQuery);
@@ -26,7 +66,7 @@ function searchTrigger(e){
 var ajaxSearch = function (e){
     var url = '/store/search',
         data = 'q=' + e.target.value;
-    console.log('search');
+    // console.log('search');
     $.ajax({
         type: 'get',
         data: data,
@@ -42,16 +82,12 @@ var ajaxSearch = function (e){
             // showNotify(button, data.result ? 'success' : 'danger', data.data);
         }
     });
-}
+};
 var ajaxTimer;
 $('#q').on('input', function (e) {
     e.preventDefault();
     if(ajaxTimer) clearTimeout(ajaxTimer);
     ajaxTimer = setTimeout(ajaxSearch, 400, e);
-});
-
-$('.view__search').on('click', function (e) {
-    $(this).prev().click();
 });
 
 function onSubmitReCaptcha(token) {
@@ -97,11 +133,9 @@ function formSend() {
     return false;
 }
 $(function() {
-    // $('#feedback-form').submit(function(event) {
-    // console.log('formSubmit');
-        // отменим отправку форму на сервер
-        // event.preventDefault();
-        // вызываем invisible reCaptcha
-        // grecaptcha.execute();
-    // });
+
 });
+
+function mapOnLoad(){
+    $('.loader').fadeOut(300);
+}

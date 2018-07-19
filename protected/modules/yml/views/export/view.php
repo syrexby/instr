@@ -10,7 +10,7 @@
     <email><?= $model->shop_email; ?></email>
     <currencies>
         <?php foreach ($currencies as $currency): ?>
-            <currency id="<?= $currency; ?>" <?= $currency === 'RUB' ? 'rate="1"' : '';?>/>
+            <currency id="<?= $currency; ?>" <?= $currency === 'BYN' ? 'rate="1"' : 'rate="CB"';?>/>
         <?php endforeach; ?>
     </currencies>
     <categories>

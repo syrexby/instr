@@ -199,7 +199,7 @@ return [
     'No' => 'Нет',
     'Not active' => 'Не доступен',
     'Not available' => 'Нет в наличии',
-    'Not in stock' => 'Нет в наличии',
+    'Not in stock' => 'Нет в наличии, под заказ',
     'not' => 'не',
     'Number' => 'Число',
     'On moderation' => 'На модерации',

@@ -147,7 +147,7 @@ class Type extends \yupe\models\YModel
             if ($attribute->group) {
                 $attributeGroups[$attribute->group->name][] = $attribute;
             } else {
-                $attributeGroups[Yii::t('StoreModule.store', 'Without a group')][] = $attribute;
+                $attributeGroups[null][] = $attribute;
             }
         }
         
