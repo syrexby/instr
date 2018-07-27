@@ -8,6 +8,7 @@
     <version><?= $model->shop_version; ?></version>
     <agency><?= $model->shop_agency; ?></agency>
     <email><?= $model->shop_email; ?></email>
+<!--  @TODO по хорошему надо валюту с ЦБ страны связать-->
     <currencies>
         <?php foreach ($currencies as $currency): ?>
             <currency id="<?= $currency; ?>" <?= $currency === 'BYN' ? 'rate="1"' : 'rate="CB"';?>/>

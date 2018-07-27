@@ -1,0 +1,81 @@
+	/*
+  	Flaticon icon font: Flaticon
+  	Creation date: 12/07/2018 08:34
+  	*/
+
+@font-face {
+  font-family: "Flaticon";
+  src: url("./Flaticon.eot");
+  src: url("./Flaticon.eot?#iefix") format("embedded-opentype"),
+       url("./Flaticon.woff") format("woff"),
+       url("./Flaticon.ttf") format("truetype"),
+       url("./Flaticon.svg#Flaticon") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  @font-face {
+    font-family: "Flaticon";
+    src: url("./Flaticon.svg#Flaticon") format("svg");
+  }
+}
+
+[class^="flaticon-"]:before, [class*=" flaticon-"]:before,
+[class^="flaticon-"]:after, [class*=" flaticon-"]:after {   
+  font-family: Flaticon;
+        font-size: 20px;
+font-style: normal;
+margin-left: 20px;
+}
+
+.flaticon-001-guarantee:before { content: "\f100"; }
+.flaticon-002-view:before { content: "\f101"; }
+.flaticon-003-shopping-basket:before { content: "\f102"; }
+.flaticon-004-package:before { content: "\f103"; }
+.flaticon-005-ecommerce-2:before { content: "\f104"; }
+.flaticon-006-verification:before { content: "\f105"; }
+.flaticon-007-customer-service:before { content: "\f106"; }
+.flaticon-008-advertising:before { content: "\f107"; }
+.flaticon-009-trolley:before { content: "\f108"; }
+.flaticon-010-place:before { content: "\f109"; }
+.flaticon-011-exchange:before { content: "\f10a"; }
+.flaticon-012-coupon-1:before { content: "\f10b"; }
+.flaticon-013-size:before { content: "\f10c"; }
+.flaticon-014-shopping-list:before { content: "\f10d"; }
+.flaticon-015-mobile-banking:before { content: "\f10e"; }
+.flaticon-016-newsletter:before { content: "\f10f"; }
+.flaticon-017-percent:before { content: "\f110"; }
+.flaticon-018-weight:before { content: "\f111"; }
+.flaticon-019-merchandise-1:before { content: "\f112"; }
+.flaticon-020-delivery-2:before { content: "\f113"; }
+.flaticon-021-tag:before { content: "\f114"; }
+.flaticon-022-cash-register:before { content: "\f115"; }
+.flaticon-023-gift:before { content: "\f116"; }
+.flaticon-024-ecommerce-1:before { content: "\f117"; }
+.flaticon-025-worldwide:before { content: "\f118"; }
+.flaticon-026-delivery-1:before { content: "\f119"; }
+.flaticon-027-bargain:before { content: "\f11a"; }
+.flaticon-028-coupon:before { content: "\f11b"; }
+.flaticon-029-open:before { content: "\f11c"; }
+.flaticon-030-wallet:before { content: "\f11d"; }
+.flaticon-031-store:before { content: "\f11e"; }
+.flaticon-032-buy:before { content: "\f11f"; }
+.flaticon-033-money:before { content: "\f120"; }
+.flaticon-034-invoice-1:before { content: "\f121"; }
+.flaticon-035-online-shop:before { content: "\f122"; }
+.flaticon-036-clothes:before { content: "\f123"; }
+.flaticon-037-delivery:before { content: "\f124"; }
+.flaticon-038-bars-code:before { content: "\f125"; }
+.flaticon-039-master-card:before { content: "\f126"; }
+.flaticon-040-schedule:before { content: "\f127"; }
+.flaticon-041-24-hours:before { content: "\f128"; }
+.flaticon-042-shopping:before { content: "\f129"; }
+.flaticon-043-merchandise:before { content: "\f12a"; }
+.flaticon-044-save-money:before { content: "\f12b"; }
+.flaticon-045-invoice:before { content: "\f12c"; }
+.flaticon-046-mobile:before { content: "\f12d"; }
+.flaticon-047-search:before { content: "\f12e"; }
+.flaticon-048-bill:before { content: "\f12f"; }
+.flaticon-049-shopping-online:before { content: "\f130"; }
+.flaticon-050-ecommerce:before { content: "\f131"; }
