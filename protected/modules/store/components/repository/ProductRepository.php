@@ -102,18 +102,45 @@ class ProductRepository extends CApplicationComponent
         ];
 
         if ($limit) {
-          $pagination = false;
-          $criteria->limit = (int)$limit;
+            $pagination = false;
+            $criteria->limit = (int)$limit;
         }
+        $sort = new CSort();
+        $sort->sortVar = 'sort';
+        $sort->defaultOrder = $module->getDefaultSort();
+        $sort->attributes = [
+            'popularnye'=>[
+                'asc'=>'t.position ASC',
+                'desc'=>'t.position ASC',
+                'default'=>'asc',
+                'label'=>'По популярности',
+            ],
+            'deshevie'=>[
+                'asc'=>'t.price ASC',
+                'desc'=>'t.price ASC',
+                'default'=>'asc',
+                'label'=>'Сначала дешевые',
+            ],
+            'dorogie'=>[
+                'asc'=>'t.price DESC',
+                'desc'=>'t.price DESC',
+                'default'=>'desc',
+                'label'=>'Сначала дорогие',
+            ],
+            'nazvanie'=>[
+                'asc'=>'t.name ASC',
+                'desc'=>'t.name ASC',
+                'default'=>'asc',
+                'label'=>'По названию',
+            ],
+            '*',
+        ];
         return new CActiveDataProvider(
             'Product',
             [
                 'criteria' => $criteria,
                 'pagination' => $pagination,
-                'sort' => [
-                    'sortVar' => 'sort',
-                    'defaultOrder' => $module->getDefaultSort(),
-                ],
+                'sort' => $sort,
             ]
         );
     }
@@ -249,16 +276,42 @@ class ProductRepository extends CApplicationComponent
             $pagination = false;
             $criteria->limit = (int)$limit;
         }
-
+        $sort = new CSort();
+        $sort->sortVar = 'sort';
+        $sort->defaultOrder = $module->getDefaultSort();
+        $sort->attributes = [
+            'popularnye'=>[
+                'asc'=>'t.position ASC',
+                'desc'=>'t.position ASC',
+                'default'=>'asc',
+                'label'=>'По популярности',
+            ],
+            'deshevie'=>[
+                'asc'=>'t.price ASC',
+                'desc'=>'t.price ASC',
+                'default'=>'asc',
+                'label'=>'Сначала дешевые',
+            ],
+            'dorogie'=>[
+                'asc'=>'t.price DESC',
+                'desc'=>'t.price DESC',
+                'default'=>'desc',
+                'label'=>'Сначала дорогие',
+            ],
+            'nazvanie'=>[
+                'asc'=>'t.name ASC',
+                'desc'=>'t.name ASC',
+                'default'=>'asc',
+                'label'=>'По названию',
+            ],
+            '*',
+        ];
         return new CActiveDataProvider(
             Product::model(),
             [
                 'criteria' => $criteria,
                 'pagination' => $pagination,
-                'sort' => [
-                    'sortVar' => 'sort',
-                    'defaultOrder' => $module->getDefaultSort(),
-                ],
+                'sort' => $sort,
             ]
         );
     }
@@ -283,7 +336,7 @@ class ProductRepository extends CApplicationComponent
      */
     public function getBySlug(
         $slug,
-        array $with = ['producer', 'type.typeAttributes', 'images', 'category', 'variants', 'attributesValues']
+        array $with = ['producer', /*'type.typeAttributes',*/ 'images', 'category', 'variants'/*, 'attributesValues'*/]
     ) {
         return Product::model()->published()->with($with)->find('t.slug = :slug', [':slug' => $slug]);
     }
@@ -293,7 +346,7 @@ class ProductRepository extends CApplicationComponent
      * @param array $with
      * @return mixed
      */
-    public function getById($id, array $with = ['producer', 'type.typeAttributes', 'images', 'category', 'variants'])
+    public function getById($id, array $with = ['producer', /*'type.typeAttributes',*/ 'images', 'category', 'variants'])
     {
         return Product::model()->published()->with($with)->findByPk($id);
     }

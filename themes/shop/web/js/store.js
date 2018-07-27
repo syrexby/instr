@@ -1,11 +1,3 @@
-function showNotify(element, result, message) {
-    $('#notifications').html('<div>' + message + '</div>').fadeIn().delay(3000).fadeOut();
-}
-
-$(document).ajaxError(function () {
-    $('#notifications').html('<div>Произошла ошибка =(</div>').fadeIn().delay(3000).fadeOut();
-});
-
 $(document).ready(function () {
     var cartWidgetSelector = '#shopping-cart-widget';
 

@@ -228,45 +228,7 @@
         <div class = "catalog__back"><!--catalog-back-->
             <div class="container clearfix"><!--container-->
                 <div class = "catalog__flex-container"><!--catalog-flex-->
-                  <?
-                  if (Yii::app()->controller->id == 'category' && Yii::app()->controller->action->id == 'view') : ?>
-                    <div class="catalog__navigation filter-wrap">
-                      <form id="store-filter" name="store-filter" method="GET">
-                          <div class="filter__buttons">
-                              <button value="Подобрать" class="btn-filter">Подобрать</button>
-                              <a href="/<?= Yii::app()->getRequest()->getPathInfo() ?>" class="btn-filter clear-filter">Сбросить</a>
-                          </div>
-                        <?
-                        $category_alias = substr(strrchr(Yii::app()->getRequest()->getPathInfo(), "/"), 1);
-                        $category = Yii::app()->getComponent('categoryRepository')->getByAlias($category_alias);
-
-                        $this->widget('application.modules.store.widgets.filters.PriceFilterWidget');
-//                        $this->widget('application.modules.store.widgets.filters.CategoryFilterWidget', ['limit' => 30, 'category' => $category]);
-                        $this->widget('application.modules.store.widgets.filters.ProducerFilterWidget', ['limit' => 30, 'category' => $category]);
-                        $this->widget('application.modules.store.widgets.filters.FilterBlockWidget', [
-                            'category' => $category
-                        ]);
-                        ?>
-                      </form>
-
-                    </div>
-                  <? else : ?>
-                    <div class="catalog__navigation nav-wrap">
-                        <? $this->widget('application.modules.store.widgets.CategoryWidget', ['view' => 'menu-category-widget']); ?>
-                    </div>
-                  <? endif; ?>
-
-
-
-                        <!--<div class = "catalog__button-download">
-                            <button class = "catalog__button-price">
-                                <a href = "">
-                                    <img src = "<?/*= $this->mainAssets*/?>/img/price-list.png" alt="">
-                                    <p>Скачать прайс</p>
-                                </a>
-                            </button>
-                        </div>-->
-                    <div class = "catalog__box">
+                    <div class = "catalog__box no-left-bar">
                         <div class="breadcrumbs">
                           <?php $this->widget(
                               'zii.widgets.CBreadcrumbs',

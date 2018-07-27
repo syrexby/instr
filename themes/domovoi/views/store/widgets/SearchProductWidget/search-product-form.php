@@ -3,7 +3,7 @@
         'CActiveForm',
         [
             'id' => 'catalog-search',
-            'action' => ['/store/product/index'],
+            'action' => ['/store/product/search'],
             'method' => 'GET',
             'htmlOptions' => ['class' => 'header__search-form']
         ]

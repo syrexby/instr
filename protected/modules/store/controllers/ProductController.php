@@ -34,27 +34,10 @@ class ProductController extends FrontController
     public function actionIndex()
     {
         $view = 'index';
-        $typesSearchParam = $this->attributeFilter->getTypeAttributesForSearchFromQuery(Yii::app()->getRequest());
 
-        $mainSearchParam = $this->attributeFilter->getMainAttributesForSearchFromQuery(
-            Yii::app()->getRequest(),
-            [
-                AttributeFilter::MAIN_SEARCH_PARAM_NAME => Yii::app()->getRequest()->getQuery(AttributeFilter::MAIN_SEARCH_QUERY_NAME)
-            ]
-        );
-
-        if (!empty($mainSearchParam) || !empty($typesSearchParam)) {
-            $data = $this->productRepository->getByFilter($mainSearchParam, $typesSearchParam);
-            $view = 'search';
-        } else {
-            $data = false;
-        }
         $this->render(
-            $view,
-            [
-                'dataProvider' => $data,
-                'searchString' => $view == 'search' ? $mainSearchParam[AttributeFilter::MAIN_SEARCH_PARAM_NAME] : false,
-            ]
+            $view
+
         );
     }
   /**
@@ -94,8 +77,30 @@ class ProductController extends FrontController
       echo CJSON::encode($result);
 
       return;
+    } else {
+      $typesSearchParam = $this->attributeFilter->getTypeAttributesForSearchFromQuery(Yii::app()->getRequest());
+
+      $mainSearchParam = $this->attributeFilter->getMainAttributesForSearchFromQuery(
+          Yii::app()->getRequest(),
+          [
+              AttributeFilter::MAIN_SEARCH_PARAM_NAME => Yii::app()->getRequest()->getQuery(AttributeFilter::MAIN_SEARCH_QUERY_NAME)
+          ]
+      );
+
+      if (!empty($mainSearchParam) || !empty($typesSearchParam)) {
+        $data = $this->productRepository->getByFilter($mainSearchParam, $typesSearchParam);
+      } else {
+        $data = $this->productRepository->getListForIndexPage();
+      }
+
+      $this->render(
+          'search',
+          [
+              'dataProvider' => $data,
+          ]
+      );
     }
-      throw new CHttpException(404);
+
   }
 
     /**
@@ -108,9 +113,9 @@ class ProductController extends FrontController
         $product = $this->productRepository->getBySlug($name);
 
         if (
-            null === $product ||
+            null === $product/* ||
             (isset($product->category) && $product->category->path !== $category) ||
-            (!isset($product->category) && !is_null($category))
+            (!isset($product->category) && !is_null($category))*/
         ) {
             throw new CHttpException(404, Yii::t('StoreModule.catalog', 'Product was not found!'));
         }

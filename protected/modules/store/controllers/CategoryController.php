@@ -56,7 +56,8 @@ class CategoryController extends FrontController
         if (null === $category) {
             throw new CHttpException(404);
         }
-
+//        var_dump(Yii::app()->getRequest());
+//        die();
         $typesSearchParam = $this->attributeFilter->getTypeAttributesForSearchFromQuery(Yii::app()->getRequest());
 
         $mainSearchParam = $this->attributeFilter->getMainAttributesForSearchFromQuery(

@@ -26,8 +26,12 @@ $( document ).ready(function() {
     toTopAfterAjaxUpdatePagination();
 
     $('.product-tabs').tabs();
-});
 
+});
+$(document).on('click', function (e) {
+    // console.log(e.target);
+    console.log($(e.target));
+});
 
 (function($) {
     $.fn.searchRender = function(){

@@ -19,6 +19,10 @@ class ProductAttributesWidget extends \yupe\widgets\YWidget
      */
     public $product;
     /**
+     * @var string
+     */
+    public $limit;
+    /**
      * @param Product $product
      * @return string
      *
@@ -26,12 +30,15 @@ class ProductAttributesWidget extends \yupe\widgets\YWidget
     public function getAttributes($product)
     {
         $result = '';
+        $i = 0;
         if (!empty($product->getTypeAttributes())) {
             foreach ($product->getTypeAttributes() as $attribute) {
                 if ($attribute['is_filter'] == '1') {
                     $attr = AttributeRender::renderValueInProductItem($attribute, $product->attribute($attribute));
-                    if(!empty($attr))
-                        $result .= $attr.', ';
+                    if(!empty($attr)){
+                      $result .= $attr.', ';
+                      if(++$i >= $this->limit) break;
+                    }
                 }
             }
             $result = substr($result, 0, -2);

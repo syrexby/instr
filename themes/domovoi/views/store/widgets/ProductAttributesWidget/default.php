@@ -3,6 +3,6 @@
  * @var string $attributes
  */
 ?>
-    <div class="product-vertical__descr">
-        <p class="product-descr__attr-block"><?= $attributes; ?></p>
+    <div class="item-attrs">
+        <p class="item-attrs__text">(<?= $attributes; ?>)</p>
     </div>

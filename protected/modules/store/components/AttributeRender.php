@@ -92,4 +92,51 @@ class AttributeRender
         }
         return $res.$unit;
     }
+  /**
+   * @param $attribute
+   * @param $value
+   * @return string
+   */
+  public static function renderValueInProductItem(Attribute $attribute, $value, $template = '<p>{item}</p>')
+  {
+    $title = '';
+    $unit = $attribute->unit ? ' '.$attribute->unit : '';
+    $res = null;
+    switch ($attribute->type) {
+      case Attribute::TYPE_TEXT:
+      case Attribute::TYPE_SHORT_TEXT:
+      case Attribute::TYPE_NUMBER:
+        $res = $value;
+        break;
+      case Attribute::TYPE_DROPDOWN:
+        $data = CHtml::listData($attribute->options, 'id', 'value');
+        if(is_array($value)) {
+          $value = array_shift($value);
+        }
+        if (isset($data[$value])) {
+          $res .= $data[$value];
+        }
+        break;
+      case Attribute::TYPE_CHECKBOX_LIST:
+        $data = CHtml::listData($attribute->options, 'id', 'value');
+        if(is_array($value)) {
+          foreach (array_intersect(array_keys($data), $value) as $val) {
+            $res .= strtr($template, ['{item}' => $data[$val]]);
+          }
+        }
+        break;
+      case Attribute::TYPE_CHECKBOX:
+        if($value){
+//          $res = $title;
+          $res = substr($res, 0, -1);
+          return $res;
+        }
+        break;
+    }
+    if(empty($value) || is_null($value)) {
+      $res = '';
+      return $res;
+    } else
+      return $title.$res.$unit;
+  }
 }

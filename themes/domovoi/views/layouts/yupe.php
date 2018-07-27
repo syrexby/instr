@@ -5,7 +5,9 @@
     <?php
     \yupe\components\TemplateEvent::fire(DomovoiThemeEvents::HEAD_START);
 
+    Yii::app()->getClientScript()->registerCssFile('https://fonts.googleapis.com/css?family=PT+Sans:400,400i,700,700i&amp;subset=cyrillic');
     Yii::app()->getClientScript()->registerCssFile('https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.3.5/jquery.fancybox.min.css');
+    Yii::app()->getClientScript()->registerCssFile($this->mainAssets . '/fonts/flaticon/flaticon.css');
     Yii::app()->getClientScript()->registerCssFile($this->mainAssets . '/styles/style.css');
 
     Yii::app()->getClientScript()->registerCoreScript('jquery');
@@ -94,7 +96,7 @@
 
 <body>
 <?php \yupe\components\TemplateEvent::fire(DomovoiThemeEvents::BODY_START);?>
-
+<div class="overlay"></div>
 <div class = "wrapper">
 
     <header class = "header"><!--header-->
@@ -131,8 +133,8 @@
                             <p>Сб, Вс: 9:00 - 14:00</p>
                         </div>
                     </div>
-<!--                    <label class="modal__btn" for="modal-1">Заказать обратный звонок</label>-->
                     <!-- Модальное окно -->
+<!--                    <label class="modal__btn" for="modal-1">Заказать обратный звонок</label>-->
 <!--                    <div class="modal">-->
 <!--                        <input class="modal-open" id="modal-1" type="checkbox" hidden>-->
 <!--                        <div class="modal-wrap" aria-hidden="true" role="dialog">-->
@@ -164,10 +166,10 @@
     <section class = "menu"><!--menu-->
         <div class="container clearfix"><!--container-->
             <div class = "menu__flex-container"><!--menu-flex-->
-                <div class="menu__catalog">
-                    <a href="/store"><img src="<?= $this->mainAssets?>/img/menu-lines.png" alt=""></a>
-                    <a href="/store">Каталог товаров</a>
-                </div>
+                <a href="/store" class="menu__catalog">
+                    <div><img src="<?= $this->mainAssets?>/img/menu-lines.png" alt=""></div>
+                    <div>Каталог товаров</div>
+                </a>
                 <nav class = "menu__nav">
                     <ul>
                         <li><a href="/">Главная</a></li>
@@ -179,6 +181,45 @@
                         <li><a href="/contacts">Контакты</a></li>
                     </ul>
                 </nav>
+                <div class="navbar__user">
+                    <?php if (Yii::app()->getUser()->getIsGuest()): ?>
+                        <a href="<?= Yii::app()->createUrl('/user/account/login') ?>" class="btn btn_login-button">
+                            <div class="glyph-icon flaticon-005-ecommerce-2"></div><?= Yii::t('UserModule.user', 'Login'); ?>
+                        </a>
+                    <?php else: ?>
+                        <div class="toolbar-button toolbar-button_dropdown">
+                            <span class="toolbar-button__label">
+                                <div class="glyph-icon flaticon-005-ecommerce-2"></div> Мой кабинет
+                            </span>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-menu__header">Ваш профиль - <?= Yii::app()->getUser()->getProfile()->getFullName() ?></div>
+                                <div class="dropdown-menu__item">
+                                    <div class="dropdown-menu__link">
+                                        <a href="<?= Yii::app()->createUrl('/order/user/index') ?>">Мои заказы</a>
+                                    </div>
+                                </div>
+                                <div class="dropdown-menu__item">
+                                    <div class="dropdown-menu__link">
+                                        <a href="<?= Yii::app()->createUrl('/user/profile/profile') ?>">
+                                            <?= Yii::t('UserModule.user', 'My profile') ?>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="dropdown-menu__separator"></div>
+                                <div class="dropdown-menu__item">
+                                    <div class="dropdown-menu__link dropdown-menu__link_exit">
+                                        <a href="<?= Yii::app()->createUrl('/user/account/logout') ?>">
+                                            <?= Yii::t('UserModule.user', 'Logout'); ?>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <div class="shopping-cart-widget" id="shopping-cart-widget">
+                    <?php $this->widget('application.modules.cart.widgets.ShoppingCartWidget'); ?>
+                </div>
             </div><!--menu-flex-->
         </div><!--container-->
     </section><!--menu-->
@@ -187,30 +228,36 @@
         <div class = "catalog__back"><!--catalog-back-->
             <div class="container clearfix"><!--container-->
                 <div class = "catalog__flex-container"><!--catalog-flex-->
-                    <div class="catalog__navigation">
-
-                      <?
-//                      var_dump(Yii::app()->controller->id);
-                      if (Yii::app()->controller->id == 'category' && Yii::app()->controller->action->id == 'view') : ?>
-                        <form id="store-filter" name="store-filter" method="get">
-
+                  <?
+                  if (Yii::app()->controller->id == 'category' && Yii::app()->controller->action->id == 'view') : ?>
+                    <div class="catalog__navigation filter-wrap">
+                      <form id="store-filter" name="store-filter" method="GET">
+                          <div class="filter__buttons">
+                              <button value="Подобрать" class="btn-filter">Подобрать</button>
+                              <a href="/<?= Yii::app()->getRequest()->getPathInfo() ?>" class="btn-filter clear-filter">Сбросить</a>
+                          </div>
                         <?
                         $category_alias = substr(strrchr(Yii::app()->getRequest()->getPathInfo(), "/"), 1);
                         $category = Yii::app()->getComponent('categoryRepository')->getByAlias($category_alias);
-//                        var_dump($category->name);
-//
+
                         $this->widget('application.modules.store.widgets.filters.PriceFilterWidget');
-                        $this->widget('application.modules.store.widgets.filters.CategoryFilterWidget', ['limit' => 30, 'category' => $category]);
+//                        $this->widget('application.modules.store.widgets.filters.CategoryFilterWidget', ['limit' => 30, 'category' => $category]);
                         $this->widget('application.modules.store.widgets.filters.ProducerFilterWidget', ['limit' => 30, 'category' => $category]);
                         $this->widget('application.modules.store.widgets.filters.FilterBlockWidget', [
                             'category' => $category
                         ]);
                         ?>
-                        </form>
-                      <? else :
-                        $this->widget('application.modules.store.widgets.CategoryWidget', ['view' => 'menu-category-widget']);
-                      endif;
-                      ?>
+                      </form>
+
+                    </div>
+                  <? else : ?>
+                    <div class="catalog__navigation nav-wrap">
+                        <? $this->widget('application.modules.store.widgets.CategoryWidget', ['view' => 'menu-category-widget']); ?>
+                    </div>
+                  <? endif; ?>
+
+
+
                         <!--<div class = "catalog__button-download">
                             <button class = "catalog__button-price">
                                 <a href = "">
@@ -219,7 +266,6 @@
                                 </a>
                             </button>
                         </div>-->
-                    </div>
                     <div class = "catalog__box">
                         <div class="breadcrumbs">
                           <?php $this->widget(
@@ -299,7 +345,10 @@
                     </div>
                 </div>
             </div><!--footer-flex-->
-            <div class="legal-info">ООО "КОРЕАЛ ТРЕЙД", УНП 192701933. 225611, г. Дрогичин, ул. Шевченко 93А, р/с BY95 АКВВ 3012 1233 5001 2130 0000 в ЦБУ 108 в г. Дрогичин филиала №802 ОАО «АСБ Беларусбанк», БИК AKBBBY21802.</div>
+            <div class="legal-info">ООО "КОРЕАЛ ТРЕЙД", УНП 192701933. 225611, г. Дрогичин, ул. Шевченко 93А, <br/>
+                Свидетельство No 695, от 20.06.2000 г. Выдано: Минским городским исполнительным комитетом <br/>
+                Зарегистрирован в Торговом реестре Республики Беларусь 29.08.2016 №349556</div>
+
         </div> <!--container-->
     </footer><!--footer-->
 </div>
@@ -309,6 +358,9 @@
 Yii::app()->getClientScript()->registerScriptFile('https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.3.5/jquery.fancybox.min.js', CClientScript::POS_END);
 Yii::app()->getClientScript()->registerScriptFile($this->mainAssets . '/js/product-gallery.js', CClientScript::POS_END);
 Yii::app()->getClientScript()->registerScriptFile($this->mainAssets . '/js/index.js', CClientScript::POS_END);
+Yii::app()->getClientScript()->registerScriptFile($this->mainAssets . '/js/store.js', CClientScript::POS_END);
+Yii::app()->getClientScript()->registerScriptFile($this->mainAssets . '/js/jquery.collapse.js', CClientScript::POS_END);
+Yii::app()->getClientScript()->registerScriptFile($this->mainAssets . '/js/jquery.collapse_storage.js', CClientScript::POS_END);
 Yii::app()->getClientScript()->registerScriptFile($this->mainAssets . '/js/tabs.js', CClientScript::POS_END);
 Yii::app()->getClientScript()->registerScriptFile($this->mainAssets . '/js/main.js', CClientScript::POS_END);
 ?>

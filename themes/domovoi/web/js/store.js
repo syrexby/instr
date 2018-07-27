@@ -1,3 +1,8 @@
+Number.prototype.round = function(places) {
+    return +(Math.round(this + "e+" + places)  + "e-" + places);
+};
+
+
 $(document).ready(function () {
     var cartWidgetSelector = '#shopping-cart-widget';
 
@@ -17,13 +22,10 @@ $(document).ready(function () {
     checkFirstAvailableDeliveryType();
     updateAllCosts();
 
-    // Галерея дополнительных изображений в карточке товара
-    $('.js-product-gallery').productGallery();
-
-    // Табы в карточке товара
-    $('.js-tabs').tabs();
-
-    $(".js-select2").select2();
+    $('.overlay').on('click', function() {
+        $(this).fadeOut(50);
+        $('#cart-mini').removeClass('opened');
+    });
 
     $('#start-payment').on('click', function () {
         $('.payment-method-radio:checked').parents('.payment-method').find('form').submit();
@@ -153,7 +155,7 @@ $(document).ready(function () {
         });
     });
 
-    $('body').on('click', '.quick-add-product-to-cart', function (e) {
+    $('body').on('click', '.add-product-to-cart', function (e) {
         e.preventDefault();
 
         var el = $(this),
@@ -174,10 +176,9 @@ $(document).ready(function () {
             success: function (data) {
                 if (data.result) {
                     updateCartWidget();
-                    el.off('click', '.quick-add-product-to-cart');
-                    el.removeClass('btn_cart')
-                        .addClass('btn_success')
-                        .html('Оформить заказ')
+                    el.off('click', '.add-product-to-cart');
+                    el.addClass('btn_success')
+                        .html('В корзине')
                         .attr('href', '/cart');
                 }
 
@@ -249,7 +250,21 @@ $(document).ready(function () {
     $('input[name="Order[delivery_id]"]').change(function () {
         updateShippingCost();
     });
-
+    $('body').on('mouseenter', '#cart-widget',function (e) {
+        e.preventDefault();
+        $('#cart-mini').addClass('opened');
+        $('.overlay').fadeIn(50);
+    });
+    $('body').on('mouseleave', '#cart-widget',function (e) {
+        e.preventDefault();
+        $('#cart-mini').removeClass('opened');
+        $('.overlay').fadeOut(50);
+    });
+    $('body').on('touch', '#cart-widget',function (e) {
+        e.preventDefault();
+        $('#cart-mini').toggleClass('opened');
+        $('.overlay').fadeToggle(50);
+    });
     function miniCartListeners() {
         $('.mini-cart-delete-product').click(function (e) {
             e.preventDefault();
@@ -263,16 +278,14 @@ $(document).ready(function () {
                 dataType: 'json',
                 success: function (data) {
                     if (data.result) {
-                        updateCartWidget();
+                        // el.parent().remove();
+                        updateCartWidget('del');
                     }
                 }
             });
         });
 
-        $('#cart-toggle-link').click(function (e) {
-            e.preventDefault();
-            $('#cart-mini').toggle();
-        });
+
     }
 
     function getCartTotalCost() {
@@ -354,7 +367,8 @@ $(document).ready(function () {
     }
 
     function updateFullCostWithShipping() {
-        cartFullCostWithShippingElement.html(getShippingCost() + getCartTotalCost());
+        var total = getShippingCost() + getCartTotalCost();
+        cartFullCostWithShippingElement.html(total.round(2));
     }
 
     function updateAllCosts() {
@@ -412,9 +426,11 @@ $(document).ready(function () {
         $('#product-total-price').text(price * parseInt($('#product-quantity').text()));
     }
 
-    function updateCartWidget() {
+    function updateCartWidget(act) {
         $(cartWidgetSelector).load($('#cart-widget').data('cart-widget-url'), function () {
             miniCartListeners();
+            if(act === 'del')
+                $('#cart-widget').mouseenter();
         });
     }
 
@@ -437,7 +453,7 @@ $(document).ready(function () {
     function updatePositionSumPrice(tr) {
         var count = parseInt(tr.find('.position-count').val());
         var price = parseFloat(tr.find('.position-price').text());
-        tr.find('.position-sum-price').html(price * count);
+        tr.find('.position-sum-price').html((price * count).round(2));
         updateCartTotalCost();
     }
 

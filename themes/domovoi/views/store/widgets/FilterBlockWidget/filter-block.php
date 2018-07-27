@@ -10,5 +10,8 @@
 ) ?>
 
 <?php if (!empty($attributes) || !empty($category)): ?>
-    <div class="catalog-filter__button"><button type="submit" value="Подобрать" class="btn btn_wide"></div>
+    <div class="filter__buttons">
+        <button value="Подобрать" class="btn-filter">Подобрать</button>
+        <a href="/<?= Yii::app()->getRequest()->getPathInfo() ?>" class="btn-filter clear-filter">Сбросить</a>
+    </div>
 <?php endif; ?>

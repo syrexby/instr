@@ -72,7 +72,7 @@ function getCatLinks($url){
   foreach ($elements as $element){
     // IS CATEGORY?
     $cat_id = $i++;
-    $cat_title = trim(pq($element)->text());
+    $cat_title = trim(pq($element)->attr('title'));
     $link = substr(pq($element)->attr('href'), 9);
     if(
         $link == 'nabory-akkumulyatornyh-instrumentov' ||
@@ -108,7 +108,7 @@ function getSubCatLinks($cat_links){
     foreach ($elements as $element){
       // IS CATEGORY?
       $cat_id = $i++;
-      $cat_title = trim(pq($element)->text());
+      $cat_title = trim(pq($element)->attr('title'));
       $link = substr(pq($element)->attr('href'), 9);
       $img = substr(pq($element)->find('img')->attr('src'),0);
       if($img == '/sites/default/files/imagecache/subcat_preview/img/no-image.jpg') $img = false;
@@ -205,10 +205,13 @@ function getProdLinks($cats){
         //Перебираем сначала первую страницу
         $elements = $results->find('div.catalog-pp .catalog-item .item-block_photo > a');
         foreach ($elements as $el) {
+          $have_variant = pq($el)->parents('.catalog-item__wrapper')[0]->find('a.item-block_kit-link')->html() ? true : false;
           $links[] =
               [
                   'link' => pq($el)->attr('href'),
-                  'cat' => $val->link
+                  'cat' => $val->link,
+                  'cat_name' => $val->title,
+                  'have_variant' => $have_variant
               ];
         }
         //Потом перебираем все остальные страницы из пагинации
@@ -217,10 +220,13 @@ function getProdLinks($cats){
           $results = phpQuery::newDocument(get_xml_page($url));
           $elements = $results->find('div.catalog-pp .catalog-item .item-block_photo > a');
           foreach ($elements as $el) {
+            $have_variant = pq($el)->parents('.catalog-item__wrapper')[0]->find('a.item-block_kit-link')->html() ? true : false;
             $links[] =
                 [
                     'link' => pq($el)->attr('href'),
-                    'cat' => $val->link
+                    'cat' => $val->link,
+                    'cat_name' => $val->title,
+                    'have_variant' => $have_variant
                 ];
           }
 
@@ -229,10 +235,13 @@ function getProdLinks($cats){
       } else {
         $elements = $results->find('div.catalog-pp .catalog-item .item-block_photo > a');
         foreach ($elements as $el) {
+          $have_variant = pq($el)->parents('.catalog-item__wrapper')[0]->find('a.item-block_kit-link')->html() ? true : false;
           $links[] =
               [
                   'link' => pq($el)->attr('href'),
-                  'cat' => $val->link
+                  'cat' => $val->link,
+                  'cat_name' => $val->title,
+                  'have_variant' => $have_variant
               ];
         }
       }
@@ -253,15 +262,29 @@ function getProdLinks($cats){
  */
 function jsonProdInfo($links, $cats ,$pdo){
   $info = array();
-//  pr($links, false);
+//  pr($links);
   $i = 0;
-  foreach($links as $link){
+  foreach($links as $idx => $link){
 
     $link = (object)$link;
+
+
     $url = 'https://7745.by' . $link->link;
+
     $results = phpQuery::newDocument(get_xml_page($url));
-
-
+    // Переберём варианты
+    if($link->have_variant){
+      $variants = $results->find('div.kit__option');
+      foreach ($variants as $var){
+        if(pq($var)->attr('data-kit-choosed')) continue;
+        $links[] = [
+            'link' => $link->link . '#p' . pq($var)->attr('data-prod-ids'),
+            'cat' => $link->cat,
+            'cat_name' => $link->cat_name,
+            'have_variant' => '0'
+            ];
+      }
+    }
 
     $title = $results->find('h1.product__title')->text();
 //    V Если нужно убрать скобки с кодом V
@@ -270,11 +293,11 @@ function jsonProdInfo($links, $cats ,$pdo){
 
     $art = $results->find('.product-head__code')->html();
     $cat = $link->cat;
+    $cat_name = $link->cat_name;
     $brand = $results->find('.prod-card-brand-name')->text();
     $price = $results->find('span.additionalPrice')->text();
     $price = $price ?:  $results->find('span.product_price-value')->text();
-    $price = (float)str_replace(',', '.', trim($price));
-
+    $price = tofloat($price);
     $desc = $results->find('h3.product__title.product__title--h3 + p')->html() ?: $results->find('.product_wrapper  .preview-description > p')->html();
 
     $package = trim($results->find('.inline-lists .circle-marker-list')->html());
@@ -285,8 +308,8 @@ function jsonProdInfo($links, $cats ,$pdo){
 
 
     $importer = pq($results)->find('div.manufacturer')->html();
-    if(!preg_match("/ТД Комплект/ui", $importer, $matches)) continue;
-    $importer = $matches[0];
+    if(!preg_match("/Импортер: (.*ТД Комплект.+)<br>/ui", $importer, $matches)) continue;
+    $importer = $matches[1];
 
     $warranty = (int)pq($results)->find('li.assurance a')->text();
 
@@ -309,14 +332,18 @@ function jsonProdInfo($links, $cats ,$pdo){
     $images = [];
     $images_tmp = $results->find('div.product_wrapper .product_container--main-left .product__media-preview img');
     foreach ($images_tmp as $img) {
-      $images[] = str_replace("imagecache/card_main_preview/", "", pq($img)->attr('src'));
+        $img_tmp = str_replace("imagecache/card_main_preview/", "", pq($img)->attr('src'));
+        $pos = strpos($img_tmp, '/uploads/zoomos');
+        $img_tmp = $pos ? str_replace("/sites/default/files", "", $img_tmp) : $img_tmp;
+        $images[] = $img_tmp;
+
     }
 
     $slug = str2url($title);
 
     //$category_id = array_search($cat, array_column($cats, 'link'), true) + 417;
 
-    $info_tmp = array('name' => $title, 'art' => $art, 'slug' => $slug, 'cat_slug' => $cat, 'price' => $price,
+    $info_tmp = array('name' => $title, 'art' => $art, 'slug' => $slug, 'cat_slug' => $cat, 'cat_name' => $cat_name, 'price' => $price,
         'images' => $images, 'description' => $desc, 'attributes' => $attributes, 'brand' => $brand, 'package' => $package,
         );
 //    pr($info_tmp);
@@ -361,30 +388,60 @@ function insertProdInfo($prod_info, $pdo){
 
   foreach ($prod_info as $el) {
 //    $price = (float)str_replace(' ', '', substr($el['price'], 0, -3));
-//    pr($price);
+//    pr($el);
     $count = $pdo->prepare("SELECT slug FROM yupe_store_product WHERE slug = ?");
     $count->execute([$el->slug]);
     $count = $count->fetchAll();
     if(count($count) == 0) {
-//      pr($el);
+      pr($el->name, false);
       $img_link = 'https://7745.by' . $el->images[0];
       $cat_id = $pdo->prepare("SELECT id FROM yupe_store_category WHERE slug = ?");
       $cat_id->execute([$el->cat_slug]);
       $cat_id = $cat_id->fetchAll()[0]['id'];
 
-      $brand_id = $pdo->prepare("SELECT id FROM yupe_store_producer WHERE name = ?");
-      $brand_id->execute([$el->brand]);
-      $brand_id = $brand_id->fetchAll()[0]['id'];
+      $brand = $pdo->prepare("SELECT id, sort FROM yupe_store_producer WHERE name = ?");
+      $brand->execute([$el->brand]);
+      $brand = $brand->fetchAll();
+      if(count($brand)){
+        $brand_id = $brand[0]['id'];
+      } else{
+        $last_brand = $pdo->prepare("SELECT id, sort FROM yupe_store_producer ORDER BY ID DESC LIMIT 1");
+        $last_brand->execute();
+        $last_brand = $last_brand->fetchAll();
+        $data = [
+            'name_short' => $el->brand,
+            'name' => $el->brand,
+            'slug' => str2url($el->brand),
+            'status' => '1',
+            'sort' => $last_brand[0]['sort'] + 1,
+        ];
+        $qry = $pdo->prepare("
+        INSERT INTO yupe_store_producer (name_short, name, slug, status, sort)
+        values (:name_short, :name, :slug, :status, :sort)");
+        try{
+          $qry->execute($data);
+          $brand_id = $pdo->lastInsertId();
+        } catch (PDOException $e) {
+          echo "<p>" . $e->getMessage() . "</p>";
+        }
+      }
+      $img = basename($img_link) == 'no-image.jpg' ? null : md5(uniqid('', true));
+      $img = $img ? $img . '.' . pathinfo($img_link,PATHINFO_EXTENSION) : null;
 //      pr($brand_id);
+//      pr($img);
+      $price = $el->price != 0 ? round($el->price / 1.015,1, PHP_ROUND_HALF_DOWN) : 0;
+      $type_id = $pdo->prepare("SELECT id FROM yupe_store_type WHERE name = ?");
+      $type_id->execute([$el->cat_name]);
+      $type_id = $type_id->fetchAll()[0]['id'];
       $data = array(
           'name' => $el->name,
           'slug' => $el->slug,
           'category_id' => $cat_id,
-          'producer_id' => $brand_id,
-          'type_id' => 1,
-          'price' => round($el->price / 1.015,0, PHP_ROUND_HALF_DOWN),
+          'producer_id' => $brand_id ?? '1',
+          'type_id' => $type_id ?? '1',
+          'price' => $price,
           'description' => $el->description,
-          'image' => substr(strrchr($img_link, "/"), 1),
+          'image' => $img,
           'create_time' => date("Y-m-d H:i:s"),
           'update_time' => date("Y-m-d H:i:s"),
           'data' => $el->package,
@@ -403,21 +460,24 @@ function insertProdInfo($prod_info, $pdo){
         $el->id = $pdo->lastInsertId();
         assignAttributes($el, $pdo);
         $pos++;
-        copy($img_link, '../uploads/store/product' . strrchr($img_link, "/"));
+        if($img) copy($img_link, '../uploads/store/product/' . $img);
         if(count($el->images) > 1){
           foreach($el->images as $idx => $image){
             if($idx == 0) continue;
             $img_link = 'https://7745.by' . $image;
+            $img = basename($img_link) == 'no-image.jpg' ? null : md5(uniqid('', true));
+            $img .= '.' . pathinfo($img_link,PATHINFO_EXTENSION);
             $data = [
                 'product_id' => $el->id,
-                'name' => substr(strrchr($img_link, "/"), 1),
+                'name' => $img,
                 'title' => $el->name,
             ];
+
             $qry = $pdo->prepare("
               INSERT INTO yupe_store_product_image (product_id, name, title)
               values (:product_id, :name, :title)");
             $qry->execute($data);
-            copy($img_link, '../uploads/store/product' . strrchr($img_link, "/"));
+            copy($img_link, '../uploads/store/product/' .$img);
           }
 
         }
@@ -495,11 +555,13 @@ function assignAttributes($product, $pdo){
           $data['number_value'] = $check !== false ? 1 : 0;
           break;
         case 6:
-//          pr($attr, false);
+//          pr($attr);
           if ($unit) {
             $attr_val = trim(str_replace($unit, '', $attr_val));
             $attr_val = trim(str_replace(',', '.', $attr_val));
           }
+
+          if($attr[0]['title'] == 'Вес нетто' && $attr_val < 100) $attr_val = $attr_val * 1000;
           $data['number_value'] = $attr_val;
           break;
       }
@@ -544,17 +606,16 @@ function getAllAttributes($prods){
 //      pr(key($attr), false);
     }
   }
-//  pr($attr_temp2);
+//  pr($attr_temp);
 
   foreach($attr_temp2 as $cat => $attrs){
     $values[$cat] = array_unique($attrs);
   }
-//  pr($values, false);
+//  pr($values);
 
 
   foreach($attr_temp as $cat => $attrs){
     $attr_temp3[$cat] = array_unique($attrs);
-
     foreach($attr_temp3[$cat] as $attr){
       $type = null;
       $unit = '';
@@ -1229,13 +1290,13 @@ function getAllAttributes($prods){
  * @param $pdo
  */
 function insertAttributes($attrs, $pdo){
-//  pr($attrs);
+
   $attr_sort = 1;
   $option_sort = 1;
-  foreach ($attrs as $attr) {
-//    pr($attr);
+  foreach ($attrs as $index => $attr) {
+
     foreach($attr as $name => $attr_info){
-//      pr($attr);
+
       $title = $name;
       $name = str2url($name);
 
@@ -1272,38 +1333,26 @@ function insertAttributes($attrs, $pdo){
         'sort' => $attr_sort
       ];
 
-      $count = $pdo->prepare("SELECT name FROM yupe_store_attribute WHERE name = ?");
-      $count->execute([$name]);
-      $count = $count->fetchAll();
-      if(count($count) == 0) {
+      $attr_count = $pdo->prepare("SELECT id FROM yupe_store_attribute WHERE name = ?");
+      $attr_count->execute([$name]);
+      $attr_count = $attr_count->fetchAll();
+
+      if(count($attr_count) == 0) {
         $qry = $pdo->prepare("
           INSERT INTO yupe_store_attribute (title, name, type, unit, is_filter, sort)
           values (:title, :name, :type, :unit, :is_filter, :sort)");
 
-        $attr_id = null;
         try {
           $qry->execute($data);
           $attr_id = $pdo->lastInsertId();
-//          pr($attr_id, false);
           $attr_sort++;
 
-          /* Показывать атрибут в типах товара */
-          $data = [
-              'type_id' => 1,
-              'attribute_id' => $attr_id,
-          ];
-          $qry = $pdo->prepare("
-              INSERT INTO yupe_store_type_attribute (type_id, attribute_id)
-              values (:type_id, :attribute_id)");
-          $qry->execute($data);
-
         } catch (PDOException $e) {
-//          echo "<p>" . $e->__toString() . "</p>";
           echo "<p>" . $e->getMessage() . "</p>";
           continue;
         }
 
-//        pr($data_options, false);
+
         /* Чистим от unit все значения */
         if ($unit) {
           foreach ($data_options as $key => $option) {
@@ -1330,14 +1379,35 @@ function insertAttributes($attrs, $pdo){
               echo "<p>" . $e->getMessage() . "</p>";
               continue;
             }
-
           }
         }
+      }
+      /* Показывать атрибут в типах товара */
+      $cat = $pdo->prepare("SELECT name FROM yupe_store_category WHERE slug = ?");
+      $cat->execute([$index]);
+      $cat = $cat->fetchAll();
+      $typename = $cat[0]['name'];
 
+      $type = $pdo->prepare("SELECT id FROM yupe_store_type WHERE name = ?");
+      $type->execute([$typename]);
+      $type = $type->fetchAll();
+
+      $data = [];
+      if(count($type) == 0) {
+        $qry = $pdo->prepare("INSERT INTO yupe_store_type (name) VALUES (:name)");
+        $qry->execute(['name' => $typename]);
+        $data['type_id'] = $pdo->lastInsertId();
+      } else {
+        $data['type_id'] = $type[0]['id'];
       }
 
+      $attr_id = $attr_count[0]['id'] ?? $attr_id;
+      $data['attribute_id'] = $attr_id;
+      $qry = $pdo->prepare("
+              INSERT INTO yupe_store_type_attribute (type_id, attribute_id)
+              values (:type_id, :attribute_id)");
+      $qry->execute($data);
     }
-//    pr($attr);
   }
 }
 /**
@@ -1371,12 +1441,14 @@ function jsonProdLinks($prod_links, $pdo){
     $data = [
         'link' => $link['link'],
         'cat' => $link['cat'],
+        'cat_name' => $link['cat_name'],
+        'have_variant' => $link['have_variant'],
     ];
-//    pr($data);
+//    pr($data,false);
 
     $qry = $pdo->prepare("
-    INSERT INTO prod_links (link, cat)
-    values (:link, :cat)");
+    INSERT INTO prod_links (link, cat, cat_name, have_variant)
+    values (:link, :cat, :cat_name, :have_variant)");
 
     try {
       $qry->execute($data);
@@ -1426,6 +1498,34 @@ function str2url($str) {
   $str = trim($str, "-");
   return $str;
 }
+
+function tofloat($num) {
+    $dotPos = strrpos($num, '.');
+    $commaPos = strrpos($num, ',');
+    $sep = (($dotPos > $commaPos) && $dotPos) ? $dotPos :
+      ((($commaPos > $dotPos) && $commaPos) ? $commaPos : false);
+
+    if (!$sep) {
+        return floatval(preg_replace("/[^0-9]/", "", $num));
+    }
+
+    return floatval(
+      preg_replace("/[^0-9]/", "", substr($num, 0, $sep)) . '.' .
+      preg_replace("/[^0-9]/", "", substr($num, $sep+1, strlen($num)))
+    );
+}
+function truncate($pdo, $pdo_json){
+    $pdo_json->prepare("TRUNCATE products")->execute();
+    $pdo_json->prepare("TRUNCATE prod_links")->execute();
+//    $pdo->prepare("TRUNCATE yupe_store_category")->execute();
+    $pdo->prepare("TRUNCATE yupe_store_attribute")->execute();
+    $pdo->prepare("TRUNCATE yupe_store_attribute_option")->execute();
+    $pdo->prepare("TRUNCATE yupe_store_product")->execute();
+    $pdo->prepare("TRUNCATE yupe_store_product_attribute_value")->execute();
+    $pdo->prepare("TRUNCATE yupe_store_product_image")->execute();
+    $pdo->prepare("TRUNCATE yupe_store_type")->execute();
+    $pdo->prepare("TRUNCATE yupe_store_type_attribute")->execute();
+}
 /**
  init end
  */
@@ -1456,6 +1556,7 @@ $pdo->query("SET wait_timeout=1200;");
 $pdo_json = new PDO($dsn_json, $user_json, $pass, $opt);
 $pdo_json->query("SET wait_timeout=1200;");
 // DB init END
+truncate($pdo, $pdo_json);
 
 $url = 'https://7745.by/catalog/elektroinstrument';
 
@@ -1466,13 +1567,13 @@ $cat_info = array();
 //$allcat_links = getSubCatLinks($cat_links);
 //insertCatLinks($allcat_links, $pdo_json);
 
-$allcat_links = $pdo_json->query("SELECT * FROM logs WHERE `source`='cats_electron' ORDER BY id DESC LIMIT 1;")->fetchAll()[0];
-$allcat_links = json_decode($allcat_links['json']);
+$cat_links = $pdo_json->query("SELECT * FROM logs WHERE `source`='cats_electron' ORDER BY id DESC LIMIT 1;")->fetchAll()[0];
+$cat_links = json_decode($cat_links['json']);
 //insertCatInfo($allcat_links, $pdo);
 
-//$prod_links = getProdLinks($allcat_links);
+$prod_links = getProdLinks($cat_links);
 
-//jsonProdLinks($prod_links, $pdo_json);
+jsonProdLinks($prod_links, $pdo_json);
 //pr($prod_links);
 //pr('/**************PROD LINKS**************/', false);
 $arr = $pdo_json->query('SELECT * FROM prod_links')->fetchAll();
@@ -1480,12 +1581,14 @@ $prod_links = [];
 foreach ($arr as $key => $link){
   $prod_links[$key]['link'] = $link['link'];
   $prod_links[$key]['cat'] = $link['cat'];
+  $prod_links[$key]['cat_name'] = $link['cat_name'];
+  $prod_links[$key]['have_variant'] = $link['have_variant'];
 }
-//$prod_links = json_decode($prod_links['json']);
+
 //pr($prod_links);
-jsonProdInfo($prod_links, $allcat_links, $pdo_json);
+jsonProdInfo($prod_links, $cat_links, $pdo_json);
 //pr('/**************PROD INFO**************/', false);
-//pr($prod_info,false);
+
 
 
 
@@ -1494,12 +1597,11 @@ $prods = [];
 foreach ($arr as $prod){
   $prods[] = json_decode($prod['json']);
 }
-pr($prods);
-//insertProdInfo($prods, $pdo);
+//pr($prods);
 $attrs = getAllAttributes($prods);
-pr($attrs);
 
-//insertAttributes($attrs, $pdo);
+
+insertAttributes($attrs, $pdo);
 insertProdInfo($prods, $pdo);
 
 

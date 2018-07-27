@@ -16,9 +16,9 @@ class ProductHelper
             'name' => $product->slug,
         ];
 
-        if (isset($product->category)) {
-            $params['category'] = $product->category->path;
-        }
+//        if (isset($product->category)) {
+//            $params['category'] = $product->category->path;
+//        }
 
         return $absolute ? Yii::app()->createAbsoluteUrl($route, $params) : Yii::app()->createUrl($route, $params);
     }

@@ -27,18 +27,25 @@ $this->breadcrumbs = array_merge(
                     'afterAjaxUpdate' => 'toTopAfterAjaxUpdatePagination',
                     'itemView' => '//store/product/_item',
                     'template' => '
+                        <div class="loader list-loader">
+                            <div></div><div></div><div></div><div></div><div></div>
+                        </div>
+                        {summary}
+                        {sorter}
+                        {pager}
                         {items}
                         {pager}
                     ',
-                    'summaryText' => '',
+                    'summaryText' => 'Товары {start}-{end} из {count}',
                     'enableHistory' => true,
                     'cssFile' => false,
                     'itemsCssClass' => 'catalog__list',
+                    'sorterHeader' => 'Сортировать',
                     'sortableAttributes' => [
-                        'sku',
-                        'name',
-                        'price',
-                        'update_time'
+                        'popularnye',
+                        'deshevie',
+                        'dorogie',
+                        'nazvanie',
                     ],
                     'htmlOptions' => [
                         'class' => 'catalog__wrap'
@@ -46,10 +53,11 @@ $this->breadcrumbs = array_merge(
                     'pagerCssClass' => 'catalog__pagination',
                     'pager' => [
                         'header' => '',
-                        'prevPageLabel' => '<i class="fa fa-long-arrow-left"></i>',
-                        'nextPageLabel' => '<i class="fa fa-long-arrow-right"></i>',
-                        'firstPageLabel' => false,
-                        'lastPageLabel' => false,
+                        'prevPageLabel' => '',
+                        'nextPageLabel' => '',
+                        'firstPageLabel' => '',
+                        'lastPageLabel' => '',
+                        'maxButtonCount'=> '4',
                         'htmlOptions' => [
                             'class' => 'pagination'
                         ]

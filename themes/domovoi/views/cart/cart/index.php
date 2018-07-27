@@ -8,22 +8,22 @@
 $mainAssets = Yii::app()->getTheme()->getAssetsUrl();
 
 Yii::app()->getClientScript()->registerScriptFile($mainAssets.'/js/store.js');
+Yii::app()->layout = 'yupe-no-left';
 
 $this->title = Yii::t('CartModule.cart', 'Cart');
 $this->breadcrumbs = [
-    Yii::t("CartModule.cart", 'Catalog') => ['/store/product/index'],
     Yii::t("CartModule.cart", 'Cart'),
 ];
 ?>
 
 <?php if (Yii::app()->cart->isEmpty()): ?>
-    <div class="main__title grid">
-        <h1 class="h2"><?= Yii::t("CartModule.cart", "Cart is empty"); ?></h1>
+    <div class="entry__title">
+        <h1 class="cart__caption"><?= Yii::t("CartModule.cart", "Cart is empty"); ?></h1>
         <?= Yii::t("CartModule.cart", "There are no products in cart"); ?>
     </div>
 <?php else: ?>
-    <div class="main__title grid">
-        <h1 class="h2"><?= Yii::t("CartModule.cart", 'Cart') ?></h1>
+    <div class="entry__title cart-title">
+        <h1 class="cart__caption"><?= Yii::t("CartModule.cart", 'Cart') ?></h1>
     </div>
     <?php
     $form = $this->beginWidget(
@@ -46,19 +46,19 @@ $this->breadcrumbs = [
         ]
     ); ?>
 
-    <div class="main__cart-box grid">
-        <div class="order-box js-cart">
-            <div class="order-box__header order-box__header_black">
-                <div class="cart-list-header">
-                    <div class="cart-list__column cart-list__column_info"><?= Yii::t(
-                            "CartModule.cart",
-                            "Product"
-                        ); ?></div>
-                    <div class="cart-list__column"><?= Yii::t("CartModule.cart", "Price"); ?></div>
-                    <div class="cart-list__column"><?= Yii::t("CartModule.cart", "Amount"); ?></div>
-                    <div class="cart-list__column"><?= Yii::t("CartModule.cart", "Sum"); ?></div>
-                </div>
-            </div>
+    <div class="cart-block">
+        <div class="cart js-cart">
+<!--            <div class="cart__header">-->
+<!--                <div class="cart-list-header">-->
+<!--                    <div class="cart-list__column cart-list__column_info">--><?//= Yii::t(
+//                            "CartModule.cart",
+//                            "Product"
+//                        ); ?><!--</div>-->
+<!--                    <div class="cart-list__column">--><?//= Yii::t("CartModule.cart", "Price"); ?><!--</div>-->
+<!--                    <div class="cart-list__column">--><?//= Yii::t("CartModule.cart", "Amount"); ?><!--</div>-->
+<!--                    <div class="cart-list__column">--><?//= Yii::t("CartModule.cart", "Sum"); ?><!--</div>-->
+<!--                </div>-->
+<!--            </div>-->
             <div class="cart-list">
                 <?php
                 foreach ($positions as $position):
@@ -78,10 +78,7 @@ $this->breadcrumbs = [
                                     <img src="<?= $product->getImageUrl(90, 90, false); ?>"
                                          class="cart-item__img"/>
                                 </div>
-                                <div class="cart-item__content grid-module-4">
-                                    <?php if ($product->getCategoryId()): ?>
-                                        <div class="cart-item__category"><?= $product->category->name ?></div>
-                                    <?php endif; ?>
+                                <div class="cart-item__content">
                                     <div class="cart-item__title">
                                         <a href="<?= $productUrl; ?>" class="cart-item__link"><?= CHtml::encode(
                                                 $position->name
@@ -93,10 +90,7 @@ $this->breadcrumbs = [
                                     <?php endforeach; ?>
                                 </div>
                             </div>
-                            <div class="cart-item__price">
-                                <span class="position-price"><?= $position->getPrice(); ?></span>
-                                <span class="ruble"> <?= Yii::t("CartModule.cart", Yii::app()->getModule('store')->currency); ?></span>
-                            </div>
+
                             <div class="cart-item__quantity">
                                 <span data-min-value='1' data-max-value='99' class="spinput js-spinput">
                                     <span class="spinput__minus js-spinput__minus cart-quantity-decrease"
@@ -109,6 +103,11 @@ $this->breadcrumbs = [
                                     <span class="spinput__plus js-spinput__plus cart-quantity-increase"
                                           data-target="#cart_<?= $positionId; ?>"></span>
                                 </span>
+                                <div class="cart-item__price">
+                                    <span>1 шт = </span>
+                                    <span class="position-price"><?= $position->getPrice(); ?></span>
+                                    <span class="ruble"> <?= Yii::t("CartModule.cart", Yii::app()->getModule('store')->currency); ?></span>
+                                </div>
                             </div>
                             <div class="cart-item__summ">
                                 <span class="position-sum-price"><?= $position->getSumPrice(); ?></span>
@@ -125,15 +124,18 @@ $this->breadcrumbs = [
                     </div>
                 <?php endforeach; ?>
             </div>
+        </div>
+        <div class="checkout">
+            <h2 class="checkout__caption">Оформление заказа</h2>
             <?php if (Yii::app()->hasModule('coupon')): ?>
                 <div class="order-box__coupon">
                     <div class="coupon-box">
-                        <span class="coupon-box__label">
-                            <?= Yii::t("CartModule.cart", "Coupons"); ?>
-                        </span>
-                        <input id="coupon-code" class="input coupon-box__input">
+<!--                        <span class="coupon-box__label">-->
+<!--                            Есть промокод?-->
+<!--                        </span>-->
+                        <input id="coupon-code" class="input coupon-box__input" placeholder="Промокод?">
                         <button class="btn btn_primary coupon-box__button" type="button"
-                                id="add-coupon-code"><?= Yii::t("CartModule.cart", "Add coupon"); ?></button>
+                                id="add-coupon-code">Активировать</button>
                         <div class="row fast-order__inputs">
                             <?php foreach ($coupons as $coupon): ?>
                                 <div class="coupon">
@@ -142,17 +144,17 @@ $this->breadcrumbs = [
                                         <button type="button" class="btn btn_primary close"
                                                 data-dismiss="alert">&times;</button>
                                         <?= CHtml::hiddenField(
-                                            "Order[couponCodes][{$coupon->code}]",
-                                            $coupon->code,
-                                            [
-                                                'class' => 'coupon-input',
-                                                'data-code' => $coupon->code,
-                                                'data-name' => $coupon->name,
-                                                'data-value' => $coupon->value,
-                                                'data-type' => $coupon->type,
-                                                'data-min-order-price' => $coupon->min_order_price,
-                                                'data-free-shipping' => $coupon->free_shipping,
-                                            ]
+                                          "Order[couponCodes][{$coupon->code}]",
+                                          $coupon->code,
+                                          [
+                                            'class' => 'coupon-input',
+                                            'data-code' => $coupon->code,
+                                            'data-name' => $coupon->name,
+                                            'data-value' => $coupon->value,
+                                            'data-type' => $coupon->type,
+                                            'data-min-order-price' => $coupon->min_order_price,
+                                            'data-free-shipping' => $coupon->free_shipping,
+                                          ]
                                         ); ?>
                                     </span>
                                 </div>
@@ -164,9 +166,9 @@ $this->breadcrumbs = [
             <?php if (!empty($deliveryTypes)): ?>
                 <div class="order-box">
                     <div class="order-box__header order-box__header_normal"><?= Yii::t(
-                            "CartModule.cart",
-                            "Delivery method"
-                        ); ?></div>
+                          "CartModule.cart",
+                          "Delivery method"
+                        ); ?>:</div>
                     <div class="order-box__body">
                         <div class="order-box-delivery">
                             <div class="order-box-delivery__type">
@@ -188,11 +190,15 @@ $this->breadcrumbs = [
                                                         <span class="rich-radio-body__title">
                                                             <?= $delivery->name; ?>
                                                             - <?= $delivery->price; ?> <?= Yii::t(
-                                                                "CartModule.cart",
-                                                                Yii::app()->getModule('store')->currency
+                                                              "CartModule.cart",
+                                                              Yii::app()->getModule('store')->currency
                                                             ); ?>
                                                         </span>
                                                     </div>
+                                                    <? if($delivery->free_from) :?>
+                                                    <div
+                                                        class="rich-radio-body__text">Бесплатно при заказе от <?= $delivery->free_from; ?> руб.</div>
+                                                    <? endif; ?>
                                                     <div
                                                         class="rich-radio-body__text"><?= $delivery->description; ?></div>
                                                 </div>
@@ -202,10 +208,10 @@ $this->breadcrumbs = [
                                 <?php endforeach; ?>
                             </div>
                             <div class="order-box-delivery__address">
-                                <h3 class="h3"><?= Yii::t("CartModule.cart", "Address"); ?></h3>
+                                <h3 class="address-title"><?= Yii::t("CartModule.cart", "Address"); ?>:</h3>
 
                                 <div class="order-form">
-                                    <div class="order-form__row">
+                                    <div class="order-form__row order-form__name">
                                         <div class="order-form__item">
                                             <div class="form-group">
                                                 <?= $form->labelEx($order, 'name', ['class' => 'form-group__label']); ?>
@@ -218,13 +224,13 @@ $this->breadcrumbs = [
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="order-form__row">
+                                    <div class="order-form__row order-form__email">
                                         <div class="order-form__item">
                                             <div class="form-group">
                                                 <?= $form->labelEx(
-                                                    $order,
-                                                    'email',
-                                                    ['class' => 'form-group__label']
+                                                  $order,
+                                                  'email',
+                                                  ['class' => 'form-group__label']
                                                 ); ?>
                                                 <div class="form-group__input">
                                                     <?= $form->textField($order, 'email', ['class' => 'input']); ?>
@@ -235,13 +241,13 @@ $this->breadcrumbs = [
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="order-form__row">
+                                    <div class="order-form__row order-form__phone">
                                         <div class="order-form__item">
                                             <div class="form-group">
                                                 <?= $form->labelEx(
-                                                    $order,
-                                                    'phone',
-                                                    ['class' => 'form-group__label']
+                                                  $order,
+                                                  'phone',
+                                                  ['class' => 'form-group__label']
                                                 ); ?>
                                                 <div class="form-group__input">
                                                     <?= $form->textField($order, 'phone', ['class' => 'input']); ?>
@@ -252,33 +258,7 @@ $this->breadcrumbs = [
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="order-form__row">
-                                        <div class="order-form__item">
-                                            <div class="form-group">
-                                                <?= $form->labelEx($order, 'zipcode', ['class' => 'form-group__label']); ?>
-                                                <div class="form-group__input">
-                                                    <?= $form->textField($order, 'zipcode', ['class' => 'input']); ?>
-                                                </div>
-                                                <div class="form-group__help">
-                                                    <?= $form->error($order, 'zipcode'); ?>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="order-form__row">
-                                        <div class="order-form__item">
-                                            <div class="form-group">
-                                                <?= $form->labelEx($order, 'country', ['class' => 'form-group__label']); ?>
-                                                <div class="form-group__input">
-                                                    <?= $form->textField($order, 'country', ['class' => 'input']); ?>
-                                                </div>
-                                                <div class="form-group__help">
-                                                    <?= $form->error($order, 'country'); ?>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="order-form__row">
+                                    <div class="order-form__row order-form__city">
                                         <div class="order-form__item">
                                             <div class="form-group">
                                                 <?= $form->labelEx($order, 'city', ['class' => 'form-group__label']); ?>
@@ -291,7 +271,7 @@ $this->breadcrumbs = [
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="order-form__row">
+                                    <div class="order-form__row order-form__street">
                                         <div class="order-form__item">
                                             <div class="form-group">
                                                 <?= $form->labelEx($order, 'street', ['class' => 'form-group__label']); ?>
@@ -304,7 +284,7 @@ $this->breadcrumbs = [
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="order-form__row">
+                                    <div class="order-form__row order-form__house">
                                         <div class="order-form__item">
                                             <div class="form-group">
                                                 <?= $form->labelEx($order, 'house', ['class' => 'form-group__label']); ?>
@@ -317,7 +297,7 @@ $this->breadcrumbs = [
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="order-form__row">
+                                    <div class="order-form__row order-form__apartment">
                                         <div class="order-form__item">
                                             <div class="form-group">
                                                 <?= $form->labelEx($order, 'apartment', ['class' => 'form-group__label']); ?>
@@ -330,13 +310,13 @@ $this->breadcrumbs = [
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="order-form__row">
+                                    <div class="order-form__row order-form__comment">
                                         <div class="order-form__item">
                                             <div class="form-group">
                                                 <?= $form->labelEx(
-                                                    $order,
-                                                    'comment',
-                                                    ['class' => 'form-group__label']
+                                                  $order,
+                                                  'comment',
+                                                  ['class' => 'form-group__label']
                                                 ); ?>
                                                 <div class="form-group__input">
                                                     <?= $form->textArea($order, 'comment', ['class' => 'input']); ?>
@@ -360,18 +340,23 @@ $this->breadcrumbs = [
 
             <div class="order-box__bottom">
                 <div class="cart-box__subtotal">
-                    Итого: &nbsp;<span id="cart-total-product-count"><?= Yii::app()->cart->getItemsCount(); ?></span>&nbsp;
-                    товар(ов)
-                    на сумму &nbsp;<span id="cart-full-cost-with-shipping">0</span><span class="ruble"> <?= Yii::t(
-                            "CartModule.cart",
-                            Yii::app()->getModule('store')->currency
-                        ); ?></span>
+                    Итого:
+                    <div class="total-row">
+                        <span class="total-row__title">Товаров</span>
+                        <span class="total-row__value"><span id="cart-total-product-count"><?= Yii::app()->cart->getItemsCount(); ?></span> шт.</span>
+                    </div>
+                    <div class="total-row">
+                        <span class="total-row__title">Доставка</span>
+                        <span class="total-row__value"><span id="cart-shipping-cost">0</span> руб.</span>
+                    </div>
+                    <div class="total-row total-row__big">
+                        <span class="total-row__title">Сумма</span>
+                        <span class="total-row__value"><span id="cart-full-cost-with-shipping">0</span> руб.</span>
+                    </div>
+
                 </div>
                 <div class="cart-box__order-button">
-                    <button type="submit" class="btn btn_big btn_primary"><?= Yii::t(
-                            "CartModule.cart",
-                            "Create order and proceed to payment"
-                        ); ?></button>
+                    <button type="submit" class="btn btn_big btn_primary">Подтвердить заказ</button>
                 </div>
             </div>
         </div>

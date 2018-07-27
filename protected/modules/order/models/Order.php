@@ -864,4 +864,17 @@ class Order extends yupe\models\YModel
 
         return false;
     }
+
+    /**
+     * @var $product OrderProduct
+     * @return int
+     */
+    public function getTotalQuantity()
+    {
+        $quantity = 0;
+        foreach ($this->products as $product){
+            $quantity += $product->quantity;
+        }
+        return (int)$quantity;
+    }
 }

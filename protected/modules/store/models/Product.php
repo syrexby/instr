@@ -912,7 +912,7 @@ class Product extends yupe\models\YModel implements ICommentable
             }
         }
 
-        return number_format($newPrice, 2, ',', ' ');
+        return $newPrice;
     }
 
     /**
@@ -985,10 +985,10 @@ class Product extends yupe\models\YModel implements ICommentable
     public function getMetaTitle()
     {
         if(str_word_count($this->name,0 , 'АаБбВвГгДдЕеЁёЖжЗзИиЙйКкЛлМмНнОоПпРрСсТтУуФфХхЦцЧчШшЩщЪъЫыЬьЭэЮюЯя') >= 5){
-          $title = $this->name . ' — купить в Дрогичине';
+          $title = $this->name . ' — купить в Бресте';
         }
         else
-          $title = strtolower($this->name) . ', купить в Дрогичине с доставкой по Брестской области по хорошей цене';
+          $title = $this->name . ', купить в Бресте с бесплатной доставкой по хорошей цене';
         return $this->meta_title ?: $title;
     }
 
@@ -998,7 +998,7 @@ class Product extends yupe\models\YModel implements ICommentable
     public function getMetaDescription()
     {
         return $this->meta_description ?: strtolower($this->name) .
-          ' в Дрогичине, купить с доставкой по Брестской области. Отличные цены, лучшее обслуживание, бесплатная доставка по Дрогичину. ☎ 8 016 44 4-10-63';
+          ' в Бресте, купить доставкой. Отличные цены, лучшее обслуживание, бесплатная доставка по Бресту. ☎ 8 016 44 4-10-63';
     }
 
     /**
@@ -1006,7 +1006,7 @@ class Product extends yupe\models\YModel implements ICommentable
      */
     public function getMetaKeywords()
     {
-        return $this->meta_keywords ?: $this->name. ', дрогичин, купить, доставка';
+        return $this->meta_keywords ?: $this->name. ', брест, купить, доставка';
     }
 
     /**

@@ -12,7 +12,6 @@ $this->canonical = $product->getMetaCanonical();
 
 //Yii::app()->getClientScript()->registerScriptFile($this->mainAssets . '/js/store.js', CClientScript::POS_END);
 
-
 $this->breadcrumbs = array_merge(
     [Yii::t("StoreModule.store", 'Catalog') => ['/store/product/index']],
     $product->category ? $product->category->getBreadcrumbs(true) : [],
@@ -49,7 +48,7 @@ $(document).ready(function(){
                 nav:true,
                 items:5,
                 dots: false,
-        
+                slideBy: 2,
             });
         });
         ', CClientScript::POS_END);
@@ -87,13 +86,13 @@ if($sale || $new) {
                         </a>
                 	</div>
                 </figure>
+                <div class="product__img-nav owl-carousel">
+                    <a href="<?= StoreImage::product($product); ?>" rel="group" data-product-thumbnail
+                       class="product__nav-item">
+                        <img src="<?= StoreImage::product($product, 100, 100, false); ?>" alt="<?= CHtml::encode($product->getImageAlt()); ?>"
+                             class="product__nav-img">
+                    </a>
               <? if(count($product->getImages()) > 0 ) : ?>
-                  <div class="product__img-nav owl-carousel">
-                      <a href="<?= StoreImage::product($product); ?>" rel="group" data-product-thumbnail
-                         class="product__nav-item">
-                          <img src="<?= StoreImage::product($product, 100, 100, false); ?>" alt="<?= CHtml::encode($product->getImageAlt()); ?>"
-                               class="product__nav-img">
-                      </a>
                     <? foreach ($product->getImages() as $key => $image): ?>
                         <a href="<?= $image->getImageUrl(); ?>" rel="group" data-product-thumbnail
                            class="product__nav-item">
@@ -101,12 +100,17 @@ if($sale || $new) {
                                  class="product__nav-img">
                         </a>
                     <? endforeach; ?>
-                  </div>
               <? endif; ?>
+                </div>
             </div>
 
-            <div class="order__good__options">
-
+            <form class="order__good__options" action="<?= Yii::app()->createUrl('cart/cart/add'); ?>" method="post">
+                <input type="hidden" name="Product[id]" value="<?= $product->id; ?>"/>
+                <?= CHtml::hiddenField(
+                  Yii::app()->getRequest()->csrfTokenName,
+                  Yii::app()->getRequest()->csrfToken
+                ); ?>
+                <input type="hidden" name="Product[quantity]" value="1" class="spinput__value" id="product-quantity-input"/>
                 <h1 class = "options-capture" itemprop="name"><?= CHtml::encode($product->getTitle()); ?></h1>
                 <div  itemprop="offers" itemscope itemtype="http://schema.org/Offer"
                       class="options-price <?= $product->in_stock != $product::STATUS_IN_STOCK ? 'not-in-stock' : '' ?>" >
@@ -125,19 +129,31 @@ if($sale || $new) {
                     <p class = "options-price-volume" itemprop="price" content="<?= round($product->getResultPrice(), 2); ?>">
                         <span itemprop="priceCurrency" content="BYN"><?= round($product->getResultPrice(), 2); ?> руб./шт.</span>
                     </p>
-                    <p class = "catalog__list__item-price-add">
+                   <!-- <p class = "catalog__list__item-price-add">
                         Цены — ориентировочные.<br/> Уточняйте их у продавца.
-                    </p>
+                    </p>-->
 <!--                    <p class = "options-price-opt">от 5 шт. - 30,35 руб.</p>-->
+                    <div class="product__cart-button">
+                        <?php if(!Yii::app()->cart->itemAt($product->id)):?>
+                            <button class="btn btn__cart" id="add-product-to-cart" data-loading-text="<?= Yii::t("StoreModule.store", "Adding"); ?>">
+                                <div class="glyph-icon flaticon-003-shopping-basket"></div>
+                                В корзину
+                            </button>
+                        <?php endif;?>
+                    </div>
                 </div>
-                <p>Заказать можно по телефонам:</p>
-                <button class = "options-button">
-                    <a href="tel:+375164441063">8 (01644) 4-10-63</a>
+
+                <p>Или закажите по телефонам:</p>
+                <button class = "btn btn__options">
+                    <a href="tel:+375298098352">+375 (29) 809-83-52</a>
+                </button>
+                <button class = "btn btn__options">
+                    <a href="tel:+375296553664">+375 (29) 655-36-64</a>
                 </button>
 <!--                <button class = "options-button">-->
 <!--                    <a href="tel:+375164441063">8 (029) 329-80-38</a>-->
 <!--                </button>-->
-            </div>
+            </form>
         </div>
         <div class = "order__description product-tabs">
             <div class = "order__tabs" data-nav="data-nav">
@@ -156,7 +172,10 @@ if($sale || $new) {
                     <div class="features">
                         <h2 class="attr__title">Технические характеристики</h2>
                       <?php foreach ($product->getAttributeGroups() as $groupName => $items): ?>
-                        <? if($groupName && $groupName != 'Технические характеристики') :?>
+                        <? if($groupName &&
+                            $groupName != 'Технические характеристики' /*&&
+                            $product->attribute($items[0])*/) :
+                        ?>
                               <h2 class="attr-group__title"><?= CHtml::encode($groupName); ?></h2>
                         <? endif; ?>
                           <div class="attr-group__items">
